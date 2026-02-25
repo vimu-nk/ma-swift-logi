@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SwiftTrack — Sign in to your logistics dashboard">
+  <title>SwiftTrack — Login</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+<!-- ═══════════ Login View ═══════════ -->
+<div class="login-container view active">
+  <div class="card login-card">
+    <div class="logo-big">⚡</div>
+    <h1 class="text-gradient">SwiftTrack</h1>
+    <p class="subtitle">Logistics Management Platform</p>
+
+    <form id="login-form" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="login-username">Username</label>
+        <input class="form-input" id="login-username" type="text" placeholder="Enter username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <div class="input-group">
+          <input class="form-input" id="login-password" type="password" placeholder="Enter password" required>
+          <button type="button" class="btn-toggle-pw" id="toggle-password" title="Show password">👁️</button>
+        </div>
+      </div>
+      <div id="login-error" class="login-error"></div>
+      <button type="submit" class="btn btn-primary" id="login-btn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="demo-accounts">
+      <h4>Demo Accounts</h4>
+      <div class="demo-chips">
+        <span class="demo-chip" data-user="client1" data-pass="password123">
+          client1 <span class="chip-role">client</span>
+        </span>
+        <span class="demo-chip" data-user="client2" data-pass="password123">
+          client2 <span class="chip-role">client</span>
+        </span>
+        <span class="demo-chip" data-user="driver1" data-pass="password123">
+          driver1 <span class="chip-role">driver</span>
+        </span>
+        <span class="demo-chip" data-user="driver2" data-pass="password123">
+          driver2 <span class="chip-role">driver</span>
+        </span>
+        <span class="demo-chip" data-user="admin" data-pass="admin123">
+          admin <span class="chip-role">admin</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/static/shared.js"></script>
+<script src="/static/login.js"></script>
+</body>
+</html>

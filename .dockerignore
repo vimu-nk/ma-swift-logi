@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+dist
+.eggs
+*.egg
+.venv
+venv
+
+# IDE
+.vscode
+.idea
+
+# Documentation
+*.md
+!README.md
+
+# Environment files
+.env
+.env.local
+
+# Docker override
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Assignment PDF
+*.pdf

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="SwiftTrack — Driver Dashboard" />
+		<title>SwiftTrack — Driver Dashboard</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"
+		/>
+	</head>
+	<body>
+		<!-- ═══════════ App Shell (Nav) ═══════════ -->
+		<div class="app-container">
+			<!-- Navigation -->
+			<nav class="navbar">
+				<a class="navbar-brand" href="/driver">
+					<div class="logo">⚡</div>
+					<span class="text-gradient">SwiftTrack</span>
+				</a>
+				<div class="navbar-right">
+					<div
+						class="ws-indicator disconnected"
+						id="ws-status"
+						title="WebSocket disconnected"
+					></div>
+					<div class="navbar-user">
+						<span class="user-name" id="nav-user-name"></span>
+						<span class="user-role" id="nav-user-role"></span>
+					</div>
+					<button class="btn btn-sm btn-secondary" id="logout-btn">
+						Logout
+					</button>
+				</div>
+			</nav>
+
+			<!-- Page Content -->
+			<main class="page-content">
+				<!-- ═══ Driver Dashboard ═══ -->
+				<div class="dashboard-header">
+					<h1>🚚 Driver Dashboard</h1>
+					<div class="dashboard-actions">
+						<button
+							class="btn btn-sm btn-secondary"
+							id="refresh-driver-btn"
+						>
+							🔄 Refresh
+						</button>
+					</div>
+				</div>
+
+				<div class="stats-grid" id="driver-stats">
+					<div class="stat-card cyan">
+						<div class="stat-icon">📦</div>
+						<div class="stat-value" id="driver-stat-pickup">0</div>
+						<div class="stat-label">Active Pickups</div>
+					</div>
+					<div class="stat-card amber">
+						<div class="stat-icon">🚚</div>
+						<div class="stat-value" id="driver-stat-delivery">0</div>
+						<div class="stat-label">Active Deliveries</div>
+					</div>
+					<div class="stat-card green">
+						<div class="stat-icon">✅</div>
+						<div class="stat-value" id="driver-stat-completed">0</div>
+						<div class="stat-label">Completed Today</div>
+					</div>
+				</div>
+
+				<div class="section-grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-xl);">
+					<!-- Pickup Card -->
+					<a href="/pickup" class="card" style="text-decoration: none; text-align: center; padding: var(--space-2xl) var(--space-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s;">
+						<div style="font-size: 4rem; margin-bottom: var(--space-md);">📦</div>
+						<h2 class="text-gradient" style="margin-bottom: var(--space-sm);">Pickup Phase</h2>
+						<p class="text-muted">Manage orders assigned for pickup. Collect items and deliver them to the warehouse.</p>
+						<div class="btn btn-primary" style="margin-top: var(--space-lg); width: 100%;">Go to Pickups →</div>
+					</a>
+					
+					<!-- Delivery Card -->
+					<a href="/delivery" class="card" style="text-decoration: none; text-align: center; padding: var(--space-2xl) var(--space-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s;">
+						<div style="font-size: 4rem; margin-bottom: var(--space-md);">🚚</div>
+						<h2 class="text-gradient" style="margin-bottom: var(--space-sm);">Delivery Phase</h2>
+						<p class="text-muted">Manage orders assigned for delivery. Take items from the warehouse to the customer.</p>
+						<div class="btn btn-primary" style="margin-top: var(--space-lg); width: 100%;">Go to Deliveries →</div>
+					</a>
+				</div>
+			</main>
+		</div>
+
+		<!-- Toast Container -->
+		<div class="toast-container" id="toast-container"></div>
+
+		<script src="/static/shared.js"></script>
+		<script src="/static/driver.js"></script>
+		<script type="module">
+			import { requireAuth } from "/static/auth.js";
+			requireAuth("driver");
+		</script>
+	</body>
+</html>

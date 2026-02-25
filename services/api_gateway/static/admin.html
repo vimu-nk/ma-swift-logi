@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="SwiftTrack — Admin Console" />
+		<title>SwiftTrack — Admin Console</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+		<link
+			rel="icon"
+			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"
+		/>
+	</head>
+	<body>
+		<!-- ═══════════ App Shell (Nav) ═══════════ -->
+		<div class="app-container">
+			<!-- Navigation -->
+			<nav class="navbar">
+				<a class="navbar-brand" href="/admin">
+					<div class="logo">⚡</div>
+					<span class="text-gradient">SwiftTrack</span>
+				</a>
+				<div class="navbar-right">
+					<div
+						class="ws-indicator disconnected"
+						id="ws-status"
+						title="WebSocket disconnected"
+					></div>
+					<div class="navbar-user">
+						<span class="user-name" id="nav-user-name"></span>
+						<span class="user-role" id="nav-user-role"></span>
+					</div>
+					<button class="btn btn-sm btn-secondary" id="logout-btn">
+						Logout
+					</button>
+				</div>
+			</nav>
+
+			<!-- Page Content -->
+			<main class="page-content">
+				<!-- ═══ Admin Dashboard ═══ -->
+				<div class="dashboard-header">
+					<h1>🛡️ Admin Console</h1>
+					<div class="dashboard-actions">
+						<button
+							class="btn btn-sm btn-secondary"
+							id="refresh-admin-btn"
+						>
+							🔄 Refresh
+						</button>
+					</div>
+				</div>
+
+				<div class="tabbar" id="admin-tabs">
+					<button class="tab-btn active" data-tab="orders">
+						Orders
+					</button>
+					<button class="tab-btn" data-tab="drivers">Drivers</button>
+				</div>
+
+				<div class="stats-grid" id="admin-stats">
+					<div class="stat-card cyan">
+						<div class="stat-icon">📋</div>
+						<div class="stat-value" id="admin-stat-total">0</div>
+						<div class="stat-label">Total Orders</div>
+					</div>
+					<div class="stat-card green">
+						<div class="stat-icon">✅</div>
+						<div class="stat-value" id="admin-stat-delivered">
+							0
+						</div>
+						<div class="stat-label">Delivered</div>
+					</div>
+					<div class="stat-card purple">
+						<div class="stat-icon">🔄</div>
+						<div class="stat-value" id="admin-stat-processing">
+							0
+						</div>
+						<div class="stat-label">Processing</div>
+					</div>
+					<div class="stat-card amber">
+						<div class="stat-icon">⚠️</div>
+						<div class="stat-value" id="admin-stat-failed">0</div>
+						<div class="stat-label">Failed</div>
+					</div>
+					<div class="stat-card purple">
+						<div class="stat-icon">🚚</div>
+						<div class="stat-value" id="admin-stat-drivers">0</div>
+						<div class="stat-label">Drivers</div>
+					</div>
+					<div class="stat-card cyan">
+						<div class="stat-icon">📦</div>
+						<div class="stat-value" id="admin-stat-pickup">
+							0
+						</div>
+						<div class="stat-label">Active Pickups</div>
+					</div>
+				</div>
+
+				<div class="card tab-panel" id="panel-orders">
+					<div class="card-header">
+						<h3 class="card-title">
+							<span class="icon">📊</span> All Orders
+						</h3>
+						<select
+							class="form-select"
+							id="admin-filter-status"
+							style="width: auto; min-width: 140px"
+						>
+							<option value="">All Statuses</option>
+							<option value="PENDING">Pending</option>
+							<option value="CMS_REGISTERED">
+								CMS Registered
+							</option>
+							<option value="WMS_RECEIVED">WMS Received</option>
+							<option value="ROUTE_OPTIMIZED">
+								Route Optimized
+							</option>
+							<option value="READY">Ready</option>
+							<option value="PICKUP_ASSIGNED">Pickup Assigned</option>
+							<option value="PICKING_UP">Picking Up</option>
+							<option value="PICKED_UP">Picked Up</option>
+							<option value="AT_WAREHOUSE">At Warehouse</option>
+							<option value="OUT_FOR_DELIVERY">Out For Delivery</option>
+							<option value="DELIVERY_ATTEMPTED">Delivery Attempted</option>
+							<option value="DELIVERED">Delivered</option>
+							<option value="FAILED">Failed</option>
+						</select>
+					</div>
+					<div class="table-wrapper">
+						<table class="data-table" id="admin-orders-table">
+							<thead>
+								<tr>
+									<th>Order ID</th>
+									<th>Client</th>
+									<th>Status</th>
+									<th>Pickup Address</th>
+									<th>Delivery Address</th>
+									<th>Pickup Driver</th>
+									<th>Delivery Driver</th>
+									<th>Created</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody id="admin-orders-tbody"></tbody>
+						</table>
+					</div>
+					<div class="empty-state hidden" id="admin-orders-empty">
+						<div class="empty-icon">📭</div>
+						<p>No orders in the system yet.</p>
+					</div>
+				</div>
+
+				<div class="tab-panel hidden" id="panel-drivers">
+					<div class="card mb-md">
+						<div class="card-header">
+							<h3 class="card-title">
+								<span class="icon">➕</span> Create Driver
+							</h3>
+						</div>
+						<form id="create-driver-form" class="form-row">
+							<div class="form-group">
+								<label class="form-label" for="driver-username"
+									>Username</label
+								>
+								<input
+									class="form-input"
+									id="driver-username"
+									name="username"
+									required
+								/>
+							</div>
+							<div class="form-group">
+								<label class="form-label" for="driver-name"
+									>Name</label
+								>
+								<input
+									class="form-input"
+									id="driver-name"
+									name="name"
+									required
+								/>
+							</div>
+							<div class="form-group">
+								<label class="form-label" for="driver-password"
+									>Password</label
+								>
+								<input
+									class="form-input"
+									id="driver-password"
+									name="password"
+									type="password"
+									required
+								/>
+							</div>
+							<div
+								class="form-group"
+								style="display: flex; align-items: flex-end"
+							>
+								<button class="btn btn-primary" type="submit">
+									Create Driver
+								</button>
+							</div>
+						</form>
+					</div>
+
+					<div class="card">
+						<div class="card-header">
+							<h3 class="card-title">
+								<span class="icon">🚚</span> Drivers
+							</h3>
+						</div>
+						<div class="table-wrapper">
+							<table class="data-table" id="drivers-table">
+								<thead>
+									<tr>
+										<th>Username</th>
+										<th>Name</th>
+										<th>Assigned Orders</th>
+									</tr>
+								</thead>
+								<tbody id="drivers-tbody"></tbody>
+							</table>
+						</div>
+						<div class="empty-state hidden" id="drivers-empty">
+							<div class="empty-icon">🚚</div>
+							<p>No drivers found.</p>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+
+		<!-- ═══════════ Order Detail Modal ═══════════ -->
+		<div class="modal-overlay" id="order-modal">
+			<div class="modal">
+				<div class="modal-header">
+					<h2>📦 Order Details</h2>
+					<button class="modal-close" id="modal-close">
+						&times;
+					</button>
+				</div>
+				<div id="modal-body">
+					<div class="detail-grid" id="modal-details"></div>
+					<h3 class="mb-md" style="font-size: 0.9rem">
+						Status Timeline
+					</h3>
+					<div class="timeline" id="modal-timeline"></div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Toast Container -->
+		<div class="toast-container" id="toast-container"></div>
+
+		<script src="/static/shared.js"></script>
+		<script src="/static/admin.js"></script>
+		<script type="module">
+			import { requireAuth } from "/static/auth.js";
+			requireAuth("admin");
+		</script>
+	</body>
+</html>

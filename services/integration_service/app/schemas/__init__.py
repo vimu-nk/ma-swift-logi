@@ -1,0 +1,1 @@
+"""Integration Service — schemas (placeholder)."""

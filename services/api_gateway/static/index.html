@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SwiftTrack — Real-time logistics management dashboard">
+  <title>SwiftTrack — Logistics Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+</head>
+<body>
+
+<!-- ═══════════ Login View ═══════════ -->
+<div id="view-login" class="login-container view">
+  <div class="card login-card">
+    <div class="logo-big">⚡</div>
+    <h1 class="text-gradient">SwiftTrack</h1>
+    <p class="subtitle">Logistics Management Platform</p>
+
+    <form id="login-form" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="login-username">Username</label>
+        <input class="form-input" id="login-username" type="text" placeholder="Enter username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input class="form-input" id="login-password" type="password" placeholder="Enter password" required>
+      </div>
+      <div id="login-error" class="login-error"></div>
+      <button type="submit" class="btn btn-primary" id="login-btn">
+        Sign In
+      </button>
+    </form>
+
+    <div class="demo-accounts">
+      <h4>Demo Accounts</h4>
+      <div class="demo-chips">
+        <span class="demo-chip" data-user="client1" data-pass="password123">
+          client1 <span class="chip-role">client</span>
+        </span>
+        <span class="demo-chip" data-user="driver1" data-pass="password123">
+          driver1 <span class="chip-role">driver</span>
+        </span>
+        <span class="demo-chip" data-user="admin" data-pass="admin_secret">
+          admin <span class="chip-role">admin</span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ App Shell (Nav + Content) ═══════════ -->
+<div id="app-shell" class="app-container hidden">
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="#">
+      <div class="logo">⚡</div>
+      <span class="text-gradient">SwiftTrack</span>
+    </a>
+    <div class="navbar-right">
+      <div class="ws-indicator disconnected" id="ws-status" title="WebSocket disconnected"></div>
+      <div class="navbar-user">
+        <span class="user-name" id="nav-user-name"></span>
+        <span class="user-role" id="nav-user-role"></span>
+      </div>
+      <button class="btn btn-sm btn-secondary" id="logout-btn">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <main class="page-content">
+
+    <!-- ═══ Client Dashboard ═══ -->
+    <div id="view-client" class="view">
+      <div class="dashboard-header">
+        <h1>📦 My Orders</h1>
+        <div class="dashboard-actions">
+          <button class="btn btn-sm btn-secondary" id="refresh-orders-btn">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" id="client-stats">
+        <div class="stat-card cyan">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="stat-delivered">0</div>
+          <div class="stat-label">Delivered</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-value" id="stat-in-progress">0</div>
+          <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-icon">🚚</div>
+          <div class="stat-value" id="stat-in-transit">0</div>
+          <div class="stat-label">In Transit</div>
+        </div>
+      </div>
+
+      <!-- Create Order + Orders List -->
+      <div class="section-grid">
+        <!-- Create Form -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><span class="icon">➕</span> New Order</h3>
+          </div>
+          <form id="create-order-form">
+            <div class="form-group">
+              <label class="form-label" for="pickup-address">Pickup Address</label>
+              <input class="form-input" id="pickup-address" type="text" placeholder="123 Warehouse Ave" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="delivery-address">Delivery Address</label>
+              <input class="form-input" id="delivery-address" type="text" placeholder="456 Customer St" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="pkg-weight">Weight (kg)</label>
+                <input class="form-input" id="pkg-weight" type="number" step="0.1" min="0.1" placeholder="2.5">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pkg-type">Package Type</label>
+                <select class="form-select" id="pkg-type">
+                  <option value="standard">Standard</option>
+                  <option value="fragile">Fragile</option>
+                  <option value="express">Express</option>
+                  <option value="bulk">Bulk</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pkg-description">Description</label>
+              <input class="form-input" id="pkg-description" type="text" placeholder="Electronics, documents...">
+            </div>
+            <button type="submit" class="btn btn-primary" id="create-order-btn" style="width:100%">
+              🚀 Create Order
+            </button>
+          </form>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title"><span class="icon">📋</span> Orders</h3>
+            <select class="form-select" id="filter-status" style="width:auto;min-width:140px;">
+              <option value="">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="CMS_REGISTERED">CMS Registered</option>
+              <option value="WMS_RECEIVED">WMS Received</option>
+              <option value="ROUTE_OPTIMIZED">Route Optimized</option>
+              <option value="READY">Ready</option>
+              <option value="IN_TRANSIT">In Transit</option>
+              <option value="DELIVERED">Delivered</option>
+              <option value="FAILED">Failed</option>
+            </select>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="orders-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Status</th>
+                  <th>Pickup</th>
+                  <th>Delivery</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody">
+              </tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="orders-empty">
+            <div class="empty-icon">📭</div>
+            <p>No orders yet. Create your first order!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Driver Dashboard ═══ -->
+    <div id="view-driver" class="view">
+      <div class="dashboard-header">
+        <h1>🚚 Driver Dashboard</h1>
+        <div class="dashboard-actions">
+          <button class="btn btn-sm btn-secondary" id="refresh-driver-btn">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="driver-stats">
+        <div class="stat-card cyan">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="driver-stat-assigned">0</div>
+          <div class="stat-label">Assigned</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-icon">🚚</div>
+          <div class="stat-value" id="driver-stat-transit">0</div>
+          <div class="stat-label">In Transit</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="driver-stat-delivered">0</div>
+          <div class="stat-label">Delivered Today</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><span class="icon">📦</span> Active Orders</h3>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="driver-orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Status</th>
+                <th>Pickup</th>
+                <th>Delivery</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="driver-orders-tbody">
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state hidden" id="driver-orders-empty">
+          <div class="empty-icon">📭</div>
+          <p>No orders assigned to you right now.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Admin Dashboard ═══ -->
+    <div id="view-admin" class="view">
+      <div class="dashboard-header">
+        <h1>🛡️ Admin Console</h1>
+        <div class="dashboard-actions">
+          <button class="btn btn-sm btn-secondary" id="refresh-admin-btn">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="admin-stats">
+        <div class="stat-card cyan">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="admin-stat-total">0</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="admin-stat-delivered">0</div>
+          <div class="stat-label">Delivered</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-value" id="admin-stat-processing">0</div>
+          <div class="stat-label">Processing</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-value" id="admin-stat-failed">0</div>
+          <div class="stat-label">Failed</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title"><span class="icon">📊</span> All Orders</h3>
+          <select class="form-select" id="admin-filter-status" style="width:auto;min-width:140px;">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="CMS_REGISTERED">CMS Registered</option>
+            <option value="WMS_RECEIVED">WMS Received</option>
+            <option value="ROUTE_OPTIMIZED">Route Optimized</option>
+            <option value="READY">Ready</option>
+            <option value="IN_TRANSIT">In Transit</option>
+            <option value="DELIVERED">Delivered</option>
+            <option value="FAILED">Failed</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="admin-orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Client</th>
+                <th>Status</th>
+                <th>Pickup</th>
+                <th>Delivery</th>
+                <th>Created</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody">
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state hidden" id="admin-orders-empty">
+          <div class="empty-icon">📭</div>
+          <p>No orders in the system yet.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════ Order Detail Modal ═══════════ -->
+<div class="modal-overlay" id="order-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>📦 Order Details</h2>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div id="modal-body">
+      <div class="detail-grid" id="modal-details"></div>
+      <h3 class="mb-md" style="font-size:0.9rem;">Status Timeline</h3>
+      <div class="timeline" id="modal-timeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
