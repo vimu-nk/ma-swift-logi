@@ -134,21 +134,21 @@ async def update_order_status(
     target_status = payload.status
     
     if target_status == "AT_WAREHOUSE":
-        # System auto-assigns delivery driver and moves to OUT_FOR_DELIVERY
+        # System auto-assigns delivery driver but STAYS at AT_WAREHOUSE
+        # Driver will manually transition to OUT_FOR_DELIVERY
         assigned_order = await assign_driver(session, order, "delivery")
         if assigned_order.delivery_driver_id:
             extra_fields["delivery_driver_id"] = assigned_order.delivery_driver_id
-        target_status = "OUT_FOR_DELIVERY"
         
     elif target_status == "DELIVERY_ATTEMPTED":
         new_attempts = order.delivery_attempts + 1
         extra_fields["delivery_attempts"] = new_attempts
         if new_attempts < order.max_delivery_attempts:
-            # Reassign and retry
-            assigned_order = await assign_driver(session, order, "delivery")
-            if assigned_order.delivery_driver_id:
-                extra_fields["delivery_driver_id"] = assigned_order.delivery_driver_id
-            target_status = "OUT_FOR_DELIVERY"
+            # Keep the same driver and allow them to retry later
+            # Moving back to AT_WAREHOUSE means the driver has to start delivery again,
+            # or it can just stay as DELIVERY_ATTEMPTED and they can attempt again.
+            # Keeping it as DELIVERY_ATTEMPTED makes the most sense.
+            pass
         else:
             target_status = "FAILED"
 

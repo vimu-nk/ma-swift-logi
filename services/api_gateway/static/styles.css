@@ -1254,3 +1254,54 @@ h3 {
 .mb-lg {
 	margin-bottom: var(--space-lg);
 }
+
+/* ── Tabs ────────────────────────────────────────────── */
+.tabs {
+	display: flex;
+	gap: var(--space-md);
+	margin-bottom: var(--space-lg);
+	border-bottom: 1px solid var(--glass-border);
+	padding-bottom: 2px;
+}
+
+.tab-btn {
+	background: transparent;
+	border: none;
+	color: var(--text-secondary);
+	font-size: 0.95rem;
+	font-weight: 600;
+	padding: var(--space-sm) var(--space-md);
+	cursor: pointer;
+	position: relative;
+	transition: color var(--transition-fast);
+}
+
+.tab-btn:hover {
+	color: var(--text-primary);
+}
+
+.tab-btn.active {
+	color: var(--accent-cyan);
+}
+
+.tab-btn.active::after {
+	content: '';
+	position: absolute;
+	bottom: -3px;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: var(--gradient-primary);
+	border-radius: 3px 3px 0 0;
+	box-shadow: var(--shadow-glow-cyan);
+}
+
+.tab-content .tab-pane {
+	display: none;
+	animation: fadeIn var(--transition-base);
+}
+
+.tab-content .tab-pane.active {
+	display: block;
+}
+

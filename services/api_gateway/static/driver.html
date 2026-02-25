@@ -69,23 +69,94 @@
 					</div>
 				</div>
 
-				<div class="section-grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-lg); margin-top: var(--space-xl);">
-					<!-- Pickup Card -->
-					<a href="/pickup" class="card" style="text-decoration: none; text-align: center; padding: var(--space-2xl) var(--space-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s;">
-						<div style="font-size: 4rem; margin-bottom: var(--space-md);">📦</div>
-						<h2 class="text-gradient" style="margin-bottom: var(--space-sm);">Pickup Phase</h2>
-						<p class="text-muted">Manage orders assigned for pickup. Collect items and deliver them to the warehouse.</p>
-						<div class="btn btn-primary" style="margin-top: var(--space-lg); width: 100%;">Go to Pickups →</div>
-					</a>
-					
-					<!-- Delivery Card -->
-					<a href="/delivery" class="card" style="text-decoration: none; text-align: center; padding: var(--space-2xl) var(--space-lg); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, border-color 0.2s;">
-						<div style="font-size: 4rem; margin-bottom: var(--space-md);">🚚</div>
-						<h2 class="text-gradient" style="margin-bottom: var(--space-sm);">Delivery Phase</h2>
-						<p class="text-muted">Manage orders assigned for delivery. Take items from the warehouse to the customer.</p>
-						<div class="btn btn-primary" style="margin-top: var(--space-lg); width: 100%;">Go to Deliveries →</div>
-					</a>
+				<div class="tabs" id="driver-tabs" style="margin-top: var(--space-xl);">
+					<button class="tab-btn active" data-target="tab-pickups">Pickups</button>
+					<button class="tab-btn" data-target="tab-deliveries">Deliveries</button>
+					<button class="tab-btn" data-target="tab-completed">Completed</button>
 				</div>
+
+				<div class="tab-content">
+					<!-- Pickups Tab -->
+					<div class="tab-pane active" id="tab-pickups">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title"><span class="icon">📦</span> My Pickups</h3>
+							</div>
+							<div class="table-wrapper">
+								<table class="data-table" id="pickup-table">
+									<thead>
+										<tr>
+											<th>Order ID</th>
+											<th>Status</th>
+											<th>Pickup Details</th>
+											<th>Delivery Address</th>
+											<th>Actions</th>
+										</tr>
+									</thead>
+									<tbody id="pickup-tbody"></tbody>
+								</table>
+							</div>
+							<div class="empty-state hidden" id="pickup-empty">
+								<div class="empty-icon">📭</div>
+								<p>No active pickups assigned to you right now.</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Deliveries Tab -->
+					<div class="tab-pane" id="tab-deliveries">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title"><span class="icon">🚚</span> My Deliveries</h3>
+							</div>
+							<div class="table-wrapper">
+								<table class="data-table" id="delivery-table">
+									<thead>
+										<tr>
+											<th>Order ID</th>
+											<th>Status</th>
+											<th>Delivery Address</th>
+											<th>Attempts</th>
+											<th>Actions</th>
+										</tr>
+									</thead>
+									<tbody id="delivery-tbody"></tbody>
+								</table>
+							</div>
+							<div class="empty-state hidden" id="delivery-empty">
+								<div class="empty-icon">📭</div>
+								<p>No active deliveries assigned to you right now.</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Completed Tab -->
+					<div class="tab-pane" id="tab-completed">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title"><span class="icon">✅</span> Completed Orders</h3>
+							</div>
+							<div class="table-wrapper">
+								<table class="data-table" id="completed-table">
+									<thead>
+										<tr>
+											<th>Order ID</th>
+											<th>Status</th>
+											<th>Pickup</th>
+											<th>Delivery</th>
+										</tr>
+									</thead>
+									<tbody id="completed-tbody"></tbody>
+								</table>
+							</div>
+							<div class="empty-state hidden" id="completed-empty">
+								<div class="empty-icon">📭</div>
+								<p>No completed orders today.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+
 			</main>
 		</div>
 
