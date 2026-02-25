@@ -59,7 +59,7 @@
 		tbody.innerHTML = orderList
 			.map((order) => {
 				const actions = getPickupActions(order);
-				const packageDetails = order.package_details ? JSON.parse(order.package_details) : {};
+				const packageDetails = typeof order.package_details === 'string' ? JSON.parse(order.package_details) : (order.package_details || {});
 				const details = packageDetails.weight ? `${packageDetails.weight}kg (${packageDetails.dimensions || 'N/A'})` : '-';
 
 				return `
