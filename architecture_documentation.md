@@ -103,6 +103,15 @@ This section proves how the architecture explicitly solves the business challeng
 
 ---
 
+## 6. Enhanced Delivery Workflow & Schema Architecture
+
+Subsequent enhancements were applied to further align SwiftTrack with enterprise operational needs:
+*   **3-Strike Delivery Orchestration**: To prevent premature fulfillment failures, the internal state machine inside `update_order_status` was expanded. When a driver reports `DELIVERY_ATTEMPTED` and supplies reason notes via custom UI modals, the system transitions to an `AT_WAREHOUSE` holding state, dynamically replacing the assignment pool. A terminal `FAILED` status is only broadcast once `max_delivery_attempts` (3) is breached.
+*   **Schema Extension**: The backend database models (`SQLAlchemy`) and API Schemas (`Pydantic`) were seamlessly migrated via `Alembic` to propagate `sender_name`, `receiver_name`, and user-friendly `display_id` properties (e.g., `ODR-2A1B3C4D`). This retains the immutable core data link (UUID) whilst rendering recognizable identities for end-users.
+*   **UI Modernization**: Replaced unscalable visual assets (emojis) with professional scalable vectors (Phosphor Icons) and refactored the frontend logic stack to utilize custom asynchronous Promise-based DOM modals instead of thread-blocking OS prompt instances.
+
+---
+
 ## 7. Data Flow & Database Architecture
 
 To maintain the principles of microservices, data persistence is isolated. Centralizing the database can introduce a single point of failure and bottleneck cross-service communication.

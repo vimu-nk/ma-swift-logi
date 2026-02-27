@@ -19,14 +19,23 @@ async def create_order(
     session: AsyncSession,
     *,
     client_id: str,
+    sender_name: str | None,
+    receiver_name: str,
     pickup_address: str,
     delivery_address: str,
     package_details: dict,
 ) -> Order:
     """Create a new order in PENDING status."""
+    raw_uuid = uuid.uuid4()
+    # Generates a string like ODR-E89B156E
+    display_id = f"ODR-{raw_uuid.hex[:8].upper()}"
+    
     order = Order(
-        id=uuid.uuid4(),
+        id=raw_uuid,
+        display_id=display_id,
         client_id=client_id,
+        sender_name=sender_name or client_id,
+        receiver_name=receiver_name,
         status=OrderStatus.PENDING,
         pickup_address=pickup_address,
         delivery_address=delivery_address,

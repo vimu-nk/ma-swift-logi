@@ -40,8 +40,6 @@ services:
     ports:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MGMT_PORT:-15672}:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - swifttrack-net
     healthcheck:
@@ -228,5 +226,3 @@ networks:
 volumes:
   pg_data:
     name: swifttrack-pg-data
-  rabbitmq_data:
-    name: swifttrack-rabbitmq-data

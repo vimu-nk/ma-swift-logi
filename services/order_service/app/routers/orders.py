@@ -34,6 +34,8 @@ async def create_order(
     order = await order_svc.create_order(
         session,
         client_id=payload.client_id,
+        sender_name=payload.sender_name,
+        receiver_name=payload.receiver_name,
         pickup_address=payload.pickup_address,
         delivery_address=payload.delivery_address,
         package_details=payload.package_details,
@@ -43,7 +45,10 @@ async def create_order(
     await publish_order_created(
         order.id,
         {
+            "display_id": order.display_id,
             "client_id": payload.client_id,
+            "sender_name": order.sender_name,
+            "receiver_name": order.receiver_name,
             "pickup_address": payload.pickup_address,
             "delivery_address": payload.delivery_address,
             "package_details": payload.package_details,
@@ -148,11 +153,8 @@ async def update_order_status(
         new_attempts = order.delivery_attempts + 1
         extra_fields["delivery_attempts"] = new_attempts
         if new_attempts < order.max_delivery_attempts:
-            # Keep the same driver and allow them to retry later
-            # Moving back to AT_WAREHOUSE means the driver has to start delivery again,
-            # or it can just stay as DELIVERY_ATTEMPTED and they can attempt again.
-            # Keeping it as DELIVERY_ATTEMPTED makes the most sense.
-            pass
+            # Route back to warehouse
+            target_status = "AT_WAREHOUSE"
         else:
             target_status = "FAILED"
 

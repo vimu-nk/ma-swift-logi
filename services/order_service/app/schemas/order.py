@@ -15,6 +15,8 @@ class OrderCreate(BaseModel):
     """Payload for creating a new order."""
 
     client_id: str = Field(..., min_length=1, max_length=100)
+    sender_name: str | None = Field(None, description="Sender's name (defaults to client_id)")
+    receiver_name: str = Field(..., min_length=1, max_length=100, description="Receiver's name")
     pickup_address: str = Field(..., min_length=1)
     delivery_address: str = Field(..., min_length=1)
     package_details: dict = Field(
@@ -54,7 +56,10 @@ class OrderResponse(BaseModel):
     """Full order detail response."""
 
     id: uuid.UUID
+    display_id: str
     client_id: str
+    sender_name: str
+    receiver_name: str
     status: str
     pickup_address: str
     delivery_address: str

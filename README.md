@@ -42,6 +42,12 @@ docker compose logs -f api_gateway
 docker compose down
 ```
 
+## Features
+- **Modernized UI**: Built with responsive Glassmorphism design and Phosphor Icons for professional dashboards.
+- **Enhanced Order Management**: Granular tracking for `sender_name` and `receiver_name` appended to an intuitive `ODR-XXXXXXXX` display ID format. 
+- **Delivery Management Modal Workflows**: Employs non-blocking internal DOM modals for driver interactions.
+- **3-Strike Delivery Logic**: Sophisticated state machine handling failed delivery attempts by gracefully resetting overarching statuses to `AT_WAREHOUSE` before failing out logic circuits.
+
 ## Tech Stack
 
 - **Core**: Python 3.12 · FastAPI · Pydantic v2
