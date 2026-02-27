@@ -64,13 +64,17 @@
 
 				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${shortId(order.id)}</span></td>
+          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>
+			<div style="font-size:0.85em; opacity:0.8">${truncate(order.sender_name, 30)}</div>
 			<div><strong>${truncate(order.pickup_address, 30)}</strong></div>
 			<div class="text-sm text-muted">${details}</div>
 		  </td>
-          <td>${truncate(order.delivery_address, 30)}</td>
+          <td>
+            <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 30)}</div>
+            ${truncate(order.delivery_address, 30)}
+          </td>
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
@@ -80,13 +84,13 @@
 
 	function getPickupActions(order) {
 		if (order.status === "PICKUP_ASSIGNED") {
-			return `<button class="btn btn-sm btn-primary" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKING_UP">🚀 Start Pickup</button>`;
+			return `<button class="btn btn-sm btn-primary" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKING_UP"><i class="ph ph-rocket-launch"></i> Start Pickup</button>`;
 		}
 		if (order.status === "PICKING_UP") {
-			return `<button class="btn btn-sm btn-success" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKED_UP">📦 Confirm Pickup</button>`;
+			return `<button class="btn btn-sm btn-success" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKED_UP"><i class="ph ph-package"></i> Confirm Pickup</button>`;
 		}
 		if (order.status === "PICKED_UP") {
-			return `<button class="btn btn-sm btn-amber" data-action="pickup-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE">🏢 Drop at Warehouse</button>`;
+			return `<button class="btn btn-sm btn-amber" data-action="pickup-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE"><i class="ph ph-buildings"></i> Drop at Warehouse</button>`;
 		}
 		return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
 	}
@@ -98,15 +102,13 @@
 			showToast(
 				"success",
 				"Status Updated",
-				`Order → ${formatStatus(newStatus)}`,
+				`Order updated to ${formatStatus(newStatus)}`,
 			);
 			await loadPickups();
 		} catch (e) {
 			showToast("error", "Update Failed", e.message);
 		}
 	}
-
-	// ── Init ──────────────────────────────────────────────
 	function init() {
 		initShell();
 

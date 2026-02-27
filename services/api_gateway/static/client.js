@@ -7,7 +7,7 @@
 
   const ST = window.SwiftTrack;
   const { $, api, requireAuth, showToast, shortId, truncate,
-          formatStatus, formatTime, initShell, setOrderUpdateCallback } = ST;
+          formatStatus, formatTime, initShell, setOrderUpdateCallback, getUser } = ST;
 
   let orders = [];
   let pollingInterval = null;
@@ -60,14 +60,17 @@
     empty.classList.add('hidden');
     tbody.innerHTML = orderList.map(order => `
       <tr>
-        <td><span class="order-id">${shortId(order.id)}</span></td>
+        <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
         <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
-        <td>${truncate(order.pickup_address, 25)}</td>
-        <td>${truncate(order.delivery_address, 25)}</td>
-        <td class="text-muted text-sm">${formatTime(order.created_at)}</td>
-        <td class="cell-actions">
-          <button class="btn btn-sm btn-secondary" data-action="view-order" data-order-id="${order.id}">View</button>
+        <td>
+          <div style="font-size:0.85em; opacity:0.8">${truncate(order.sender_name, 25)}</div>
+          <div>${truncate(order.pickup_address, 25)}</div>
         </td>
+        <td>
+          <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 25)}</div>
+          <div>${truncate(order.delivery_address, 25)}</div>
+        </td>
+        <td class="text-muted text-sm">${formatTime(order.created_at)}</td>
       </tr>
     `).join('');
   }
@@ -79,6 +82,9 @@
 
     try {
       const order = await api('POST', '/api/orders', {
+        client_id: getUser().username,
+        sender_name: formData.sender_name,
+        receiver_name: formData.receiver_name,
         pickup_address: formData.pickup_address,
         delivery_address: formData.delivery_address,
         package_details: {
@@ -95,7 +101,7 @@
       showToast('error', 'Creation Failed', e.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '🚀 Create Order';
+      btn.innerHTML = '<i class="ph ph-rocket-launch"></i> Create Order';
     }
   }
 
@@ -107,6 +113,8 @@
     $('#create-order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       await createOrder({
+        sender_name: $('#sender-name').value,
+        receiver_name: $('#receiver-name').value,
         pickup_address: $('#pickup-address').value,
         delivery_address: $('#delivery-address').value,
         weight: $('#pkg-weight').value,

@@ -8,16 +8,16 @@
 /* ── CSS Custom Properties ───────────────────────────── */
 :root {
 	/* Base colors */
-	--bg-primary: #0a0e17;
-	--bg-secondary: #111827;
-	--bg-tertiary: #1a2233;
-	--bg-card: rgba(17, 24, 39, 0.7);
-	--bg-card-hover: rgba(26, 34, 51, 0.85);
-	--bg-input: rgba(15, 20, 35, 0.8);
+	--bg-primary: #0f172a;
+	--bg-secondary: #1e293b;
+	--bg-tertiary: #334155;
+	--bg-card: #1e293b;
+	--bg-card-hover: #334155;
+	--bg-input: #0f172a;
 
 	/* Glass */
-	--glass-border: rgba(255, 255, 255, 0.08);
-	--glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+	--glass-border: #334155;
+	--glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 	--glass-blur: blur(16px);
 
 	/* Text */
@@ -27,8 +27,8 @@
 	--text-inverse: #0a0e17;
 
 	/* Accents */
-	--accent-cyan: #06b6d4;
-	--accent-blue: #3b82f6;
+	--accent-cyan: #0ea5e9;
+	--accent-blue: #2563eb;
 	--accent-purple: #8b5cf6;
 	--accent-pink: #ec4899;
 	--accent-green: #10b981;
@@ -424,7 +424,7 @@ h3 {
 	content: "";
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
+	background: var(--accent-blue);
 	opacity: 0;
 	transition: opacity var(--transition-fast);
 }
@@ -516,21 +516,39 @@ h3 {
 	letter-spacing: 0.05em;
 }
 
-.form-input,
-.form-select,
-.form-textarea {
-	width: 100%;
-	padding: 10px 14px;
-	background: var(--bg-input);
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-md);
-	color: var(--text-primary);
-	font-family: inherit;
-	font-size: 0.9rem;
-	transition:
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition:
 		border-color var(--transition-fast),
 		box-shadow var(--transition-fast);
-	outline: none;
+  outline: none;
+}
+
+.form-select {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Added right padding for the icon */
+  background: var(--bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition:
+		border-color var(--transition-fast),
+		box-shadow var(--transition-fast);
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
 }
 
 .form-input:focus,
@@ -547,14 +565,6 @@ h3 {
 .form-textarea {
 	resize: vertical;
 	min-height: 80px;
-}
-
-.form-select {
-	appearance: none;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-	background-repeat: no-repeat;
-	background-position: right 12px center;
-	padding-right: 36px;
 }
 
 .form-row {
@@ -590,21 +600,22 @@ h3 {
 	opacity: 1;
 }
 
-/* ── Login View ──────────────────────────────────────── */
+/* ── Login View ──────────────────────────────────── */
 .login-container {
-	min-height: 100vh;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	z-index: 1;
-	padding: var(--space-lg);
+  min-height: 100vh;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .login-card {
-	width: 100%;
-	max-width: 420px;
-	text-align: center;
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  padding: 3rem 2rem;
+  margin: auto;
 }
 
 .login-card .logo-big {
@@ -853,7 +864,7 @@ h3 {
 	position: fixed;
 	inset: 0;
 	background: rgba(0, 0, 0, 0.6);
-	backdrop-filter: blur(4px);
+	
 	display: flex;
 	align-items: center;
 	justify-content: center;

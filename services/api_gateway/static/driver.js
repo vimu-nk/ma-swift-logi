@@ -102,13 +102,17 @@
 
 			return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${shortId(order.id)}</span></td>
+          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>
+			<div style="font-size:0.85em; opacity:0.8">${truncate(order.sender_name, 30)}</div>
 			<div><strong>${truncate(order.pickup_address, 30)}</strong></div>
 			<div class="text-sm text-muted">${details}</div>
 		  </td>
-          <td>${truncate(order.delivery_address, 30)}</td>
+          <td>
+            <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 30)}</div>
+            ${truncate(order.delivery_address, 30)}
+          </td>
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
@@ -117,13 +121,13 @@
 
 	function getPickupActions(order) {
 		if (order.status === "PICKUP_ASSIGNED") {
-			return `<button class="btn btn-sm btn-primary" data-action="order-status" data-order-id="${order.id}" data-status="PICKING_UP">🚀 Start Pickup</button>`;
+			return `<button class="btn btn-sm btn-primary" data-action="order-status" data-order-id="${order.id}" data-status="PICKING_UP"><i class="ph ph-rocket-launch"></i> Start Pickup</button>`;
 		}
 		if (order.status === "PICKING_UP") {
-			return `<button class="btn btn-sm btn-success" data-action="order-status" data-order-id="${order.id}" data-status="PICKED_UP">📦 Confirm Pickup</button>`;
+			return `<button class="btn btn-sm btn-success" data-action="order-status" data-order-id="${order.id}" data-status="PICKED_UP"><i class="ph ph-package"></i> Confirm Pickup</button>`;
 		}
 		if (order.status === "PICKED_UP") {
-			return `<button class="btn btn-sm btn-amber" data-action="order-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE">🏢 Drop at Warehouse</button>`;
+			return `<button class="btn btn-sm btn-amber" data-action="order-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE"><i class="ph ph-buildings"></i> Drop at Warehouse</button>`;
 		}
 		return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
 	}
@@ -146,9 +150,12 @@
 			
 			return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${shortId(order.id)}</span></td>
+          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
-          <td><strong>${truncate(order.delivery_address, 40)}</strong></td>
+          <td>
+            <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 40)}</div>
+            <strong>${truncate(order.delivery_address, 40)}</strong>
+          </td>
           <td><span class="badge ${order.delivery_attempts > 0 ? 'badge-amber' : ''}">${formatAttempts}</span></td>
           <td class="cell-actions">${actions}</td>
         </tr>
@@ -158,12 +165,12 @@
 
 	function getDeliveryActions(order) {
 		if (order.status === "AT_WAREHOUSE") {
-			return `<button class="btn btn-sm btn-primary" data-action="order-status" data-order-id="${order.id}" data-status="OUT_FOR_DELIVERY">🚚 Start Delivery</button>`;
+			return `<button class="btn btn-sm btn-primary" data-action="order-status" data-order-id="${order.id}" data-status="OUT_FOR_DELIVERY"><i class="ph ph-truck"></i> Start Delivery</button>`;
 		}
 		return `
 			<div style="display: flex; gap: var(--space-xs);">
-				<button class="btn btn-sm btn-success" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERED">✅ Deliver</button>
-				<button class="btn btn-sm btn-danger" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED">❌ Fail Attempt</button>
+				<button class="btn btn-sm btn-success" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
+				<button class="btn btn-sm btn-danger" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
 			</div>
 		`;
 	}
@@ -183,7 +190,7 @@
 		tbody.innerHTML = orderList.map((order) => {
 			return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${shortId(order.id)}</span></td>
+          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>${truncate(order.pickup_address, 30)}</td>
           <td>${truncate(order.delivery_address, 30)}</td>
@@ -198,7 +205,7 @@
 			const payload = { status: newStatus };
 			
 			if (newStatus === "DELIVERY_ATTEMPTED") {
-				const notes = window.prompt("Enter failure reason (optional):");
+				const notes = await ST.showPromptDialog("Failure Reason", "Enter failure reason (optional):", "e.g. Customer not home");
 				if (notes === null) return; // Cancelled
 				if (notes.trim() !== '') {
 					payload.delivery_notes = notes;

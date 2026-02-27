@@ -53,11 +53,11 @@
       const btn = $('#toggle-password');
       if (pw.type === 'password') {
         pw.type = 'text';
-        btn.textContent = '🙈';
+        btn.innerHTML = '<i class="ph-fill ph-eye-slash" style="font-size: 1.2rem; color: var(--text-muted)"></i>';
         btn.title = 'Hide password';
       } else {
         pw.type = 'password';
-        btn.textContent = '👁️';
+        btn.innerHTML = '<i class="ph-fill ph-eye" style="font-size: 1.2rem; color: var(--text-muted)"></i>';
         btn.title = 'Show password';
       }
     });

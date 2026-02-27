@@ -170,15 +170,27 @@
     const details = $('#modal-details');
     details.innerHTML = `
       <div class="detail-item">
-        <label>Order ID</label>
-        <span class="order-id">${order.id}</span>
+        <label>Display ID</label>
+        <span class="order-id" style="font-size:1.1em; font-weight:600;">${order.display_id || order.id}</span>
+      </div>
+      <div class="detail-item" style="grid-column: 1 / -1;">
+        <label>System UUID</label>
+        <span class="text-xs text-muted" style="user-select:all">${order.id}</span>
       </div>
       <div class="detail-item">
         <label>Status</label>
         <span class="status-badge status-${order.status}">${formatStatus(order.status)}</span>
       </div>
       <div class="detail-item">
-        <label>Client</label>
+        <label>Sender</label>
+        <span>${order.sender_name || order.client_id}</span>
+      </div>
+      <div class="detail-item">
+        <label>Receiver</label>
+        <span>${order.receiver_name || '-'}</span>
+      </div>
+      <div class="detail-item">
+        <label>Client ID</label>
         <span>${order.client_id}</span>
       </div>
       <div class="detail-item">
@@ -254,16 +266,62 @@
     $('#order-modal').classList.remove('active');
   }
 
+  // ── Custom Prompt Modal ───────────────────────────────
+  function showPromptDialog(title, message, placeholder = "") {
+    return new Promise((resolve) => {
+      const overlay = document.createElement("div");
+      overlay.className = "modal-overlay active";
+      overlay.style.zIndex = "9999";
+      
+      overlay.innerHTML = `
+        <div class="modal prompt-modal" style="max-width:400px;text-align:left;">
+          <div class="modal-header">
+            <h2>${title}</h2>
+            <button class="modal-close" type="button" id="prompt-x">&times;</button>
+          </div>
+          <div id="modal-body" style="padding-top: var(--space-sm);">
+            <p style="margin-bottom: var(--space-md); color: var(--text-secondary);">${message}</p>
+            <input type="text" class="form-input" id="prompt-input" placeholder="${placeholder}">
+            <div class="form-row" style="margin-top: var(--space-lg); display: flex; gap: var(--space-sm); justify-content: flex-end;">
+              <button class="btn btn-secondary" id="prompt-cancel" style="width: auto;">Cancel</button>
+              <button class="btn btn-primary" id="prompt-confirm" style="width: auto;">Confirm</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(overlay);
+      const input = overlay.querySelector("#prompt-input");
+      const cancelBtn = overlay.querySelector("#prompt-cancel");
+      const confirmBtn = overlay.querySelector("#prompt-confirm");
+      const closeBtn = overlay.querySelector("#prompt-x");
+      
+      setTimeout(() => input.focus(), 50);
+      
+      const cleanup = () => {
+        overlay.classList.remove("active");
+        setTimeout(() => overlay.remove(), 250);
+      };
+      
+      cancelBtn.onclick = closeBtn.onclick = () => { cleanup(); resolve(null); };
+      confirmBtn.onclick = () => { cleanup(); resolve(input.value); };
+      input.onkeydown = (e) => {
+        if (e.key === "Enter") confirmBtn.click();
+        if (e.key === "Escape") cancelBtn.click();
+      };
+    });
+  }
+
   // ── Toast Notifications ───────────────────────────────
   function showToast(type, title, message) {
     const container = $('#toast-container');
     if (!container) return;
-    const icons = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
+    const icons = { success: '<i class="ph ph-check-circle"></i>', info: '<i class="ph ph-info"></i>', warning: '<i class="ph ph-warning"></i>', error: '<i class="ph ph-x-circle"></i>' };
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `
-      <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+      <span class="toast-icon">${icons[type] || '<i class="ph ph-info"></i>'}</span>
       <div class="toast-body">
         <div class="toast-title">${title}</div>
         <div class="toast-message">${message}</div>
@@ -364,7 +422,7 @@
     // WebSocket
     connectWebSocket, setOrderUpdateCallback,
     // Modal
-    viewOrder, closeModal,
+    viewOrder, closeModal, showPromptDialog,
     // Toast
     showToast,
     // Utilities

@@ -61,9 +61,12 @@
 				
 				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${shortId(order.id)}</span></td>
+          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
-          <td><strong>${truncate(order.delivery_address, 40)}</strong></td>
+          <td>
+            <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 40)}</div>
+            <strong>${truncate(order.delivery_address, 40)}</strong>
+          </td>
           <td><span class="badge ${order.delivery_attempts > 0 ? 'badge-amber' : ''}">${formatAttempts}</span></td>
           <td class="cell-actions">${actions}</td>
         </tr>
@@ -75,8 +78,8 @@
 	function getDeliveryActions(order) {
 		return `
 			<div style="display: flex; gap: var(--space-xs);">
-				<button class="btn btn-sm btn-success" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERED">✅ Deliver</button>
-				<button class="btn btn-sm btn-danger" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED">❌ Fail Attempt</button>
+				<button class="btn btn-sm btn-success" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
+				<button class="btn btn-sm btn-danger" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
 			</div>
 		`;
 	}
@@ -87,7 +90,7 @@
 			
 			// If failed attempt, maybe prompt for reason? We will keep it simple and just send.
 			if (newStatus === "DELIVERY_ATTEMPTED") {
-				const notes = prompt("Enter failure reason (optional):");
+				const notes = await ST.showPromptDialog("Failure Reason", "Enter failure reason (optional):", "e.g. Customer not home");
 				if (notes !== null && notes.trim() !== '') {
 					payload.delivery_notes = notes;
 				} else if (notes === null) {

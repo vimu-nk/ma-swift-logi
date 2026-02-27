@@ -91,11 +91,17 @@
 			.map(
 				(order) => `
       <tr>
-        <td><span class="order-id">${shortId(order.id)}</span></td>
-        <td class="text-sm">${order.client_id}</td>
+        <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+        <td class="text-sm">${order.sender_name || order.client_id}</td>
         <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
-        <td>${truncate(order.pickup_address, 20)}</td>
-        <td>${truncate(order.delivery_address, 20)}</td>
+        <td>
+          <div style="font-size:0.85em; opacity:0.8">${truncate(order.sender_name, 20)}</div>
+          ${truncate(order.pickup_address, 20)}
+        </td>
+        <td>
+          <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 20)}</div>
+          ${truncate(order.delivery_address, 20)}
+        </td>
         <td class="text-sm">${order.pickup_driver_id || '<span class="text-muted">-</span>'}</td>
         <td class="text-sm">${order.delivery_driver_id || '<span class="text-muted">-</span>'}</td>
         <td class="text-muted text-sm">${formatTime(order.created_at)}</td>

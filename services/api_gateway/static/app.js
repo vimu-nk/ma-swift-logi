@@ -338,7 +338,7 @@
       showToast('error', 'Creation Failed', e.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '🚀 Create Order';
+      btn.innerHTML = '<i class="ph ph-rocket-launch"></i> Create Order';
     }
   }
 
@@ -400,12 +400,12 @@
 
   function getDriverActions(order) {
     if (order.status === 'READY' || order.status === 'ROUTE_OPTIMIZED') {
-      return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="IN_TRANSIT">🚚 Start</button>`;
+      return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="IN_TRANSIT"><i class="ph ph-truck"></i> Start</button>`;
     }
     if (order.status === 'IN_TRANSIT') {
       return `
-        <button class="btn btn-sm btn-success" data-action="driver-status" data-order-id="${order.id}" data-status="DELIVERED">✅ Deliver</button>
-        <button class="btn btn-sm btn-danger" data-action="driver-status" data-order-id="${order.id}" data-status="FAILED">❌ Fail</button>
+        <button class="btn btn-sm btn-success" data-action="driver-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
+        <button class="btn btn-sm btn-danger" data-action="driver-status" data-order-id="${order.id}" data-status="FAILED"><i class="ph ph-x-circle"></i> Fail</button>
       `;
     }
     return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
@@ -575,7 +575,7 @@
   // ── Toast Notifications ───────────────────────────────
   function showToast(type, title, message) {
     const container = $('#toast-container');
-    const icons = { success: '✅', info: 'ℹ️', warning: '⚠️', error: '❌' };
+    const icons = { success: '<i class="ph ph-check-circle"></i>', info: 'ℹ️', warning: '<i class="ph ph-warning"></i>', error: '<i class="ph ph-x-circle"></i>' };
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
