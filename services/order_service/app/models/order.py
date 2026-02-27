@@ -36,9 +36,6 @@ class OrderStatus(str, enum.Enum):
     AT_WAREHOUSE = "AT_WAREHOUSE"
     OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
     DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED"
-    DELIVERY_FAILED = (
-        "FAILED"  # Keeping enum value as FAILED for backward compatibility but conceptual failure
-    )
     DELIVERED = "DELIVERED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
@@ -50,12 +47,16 @@ class Order(Base):
     __tablename__ = "orders"
 
     id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    display_id: str = Column(String(20), unique=True, index=True, nullable=False)
     client_id: str = Column(String(100), nullable=False, index=True)
     status: OrderStatus = Column(
         Enum(OrderStatus, name="order_status"),
         nullable=False,
         default=OrderStatus.PENDING,
     )
+    
+    sender_name: str = Column(String(100), nullable=False)
+    receiver_name: str = Column(String(100), nullable=False)
 
     # Addresses
     pickup_address: str = Column(Text, nullable=False)
