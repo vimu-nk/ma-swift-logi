@@ -33,9 +33,9 @@ async def assign_driver(
     # Find the driver with the fewest active assignments for the given phase
     # For pickup phase, count active pickup orders
     # For delivery phase, count active delivery orders
-    
+
     driver_counts = {d: 0 for d in driver_usernames}
-    
+
     if driver_type == "pickup":
         active_statuses = [
             OrderStatus.PICKUP_ASSIGNED,
@@ -62,7 +62,7 @@ async def assign_driver(
 
     result = await session.execute(stmt)
     counts = result.all()
-    
+
     for driver_id, count in counts:
         if driver_id in driver_counts:
             driver_counts[driver_id] = count
@@ -81,5 +81,5 @@ async def assign_driver(
         driver_id=selected_driver,
         current_load=driver_counts[selected_driver],
     )
-    
+
     return order

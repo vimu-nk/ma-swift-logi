@@ -2,8 +2,12 @@
 
 Production-grade microservices middleware for logistics order processing.
 
-## Architecture
+## Architecture Documentation
 
+A highly detailed architectural breakdown, specifically addressing the **SCS2314 Assignment 4** challenges, integration strategies, and the choice of Microservices over Monolithic/ESB solutions can be found here: 
+📄 [**architecture_documentation.md**](./architecture_documentation.md)
+
+## Architecture
 | Service | Port | Purpose |
 |---------|------|---------|
 | `api_gateway` | 8000 | HTTP entry point, routes to downstream services |
@@ -40,8 +44,9 @@ docker compose down
 
 ## Tech Stack
 
-- Python 3.12 · FastAPI · Pydantic v2
-- SQLAlchemy 2.x (async) · Alembic
-- aio-pika (async RabbitMQ) · httpx
-- Structlog · Poetry · Docker multi-stage builds
-- Gunicorn + Uvicorn (production ASGI)
+- **Core**: Python 3.12 · FastAPI · Pydantic v2
+- **Data**: PostgreSQL 16 · SQLAlchemy 2.0 (async) · asyncpg · Alembic
+- **Messaging**: RabbitMQ 3.13 · aio-pika
+- **Integration**: httpx · python-jose (JWT)
+- **Infrastructure**: Docker Compose (multi-stage builds) · Gunicorn + Uvicorn
+- **Dev Tools**: Poetry · Pytest · Ruff

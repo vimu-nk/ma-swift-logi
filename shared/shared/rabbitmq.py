@@ -233,7 +233,8 @@ class RabbitMQClient:
         )
         dlq_queue_name = f"{queue_name}.dlq"
         dlq_queue = await self._channel.declare_queue(
-            dlq_queue_name, durable=True,
+            dlq_queue_name,
+            durable=True,
         )
         await dlq_queue.bind(dlq_exchange)
 
@@ -310,9 +311,7 @@ class RabbitMQClient:
                     # nack with requeue=False → goes to DLX → retry queue
                     await message.nack(requeue=False)
 
-        task = asyncio.create_task(
-            self._consume_loop(main_queue, _process_with_retry)
-        )
+        task = asyncio.create_task(self._consume_loop(main_queue, _process_with_retry))
         logger.info(
             "rabbitmq_consumer_started",
             queue=queue_name,

@@ -94,6 +94,7 @@ async def cancel_order(request: Request) -> Response:
 def _extract_xml_value(xml_str: str, tag: str) -> str | None:
     """Simple XML value extractor (no external dependency)."""
     import re
+
     # Match <ns:Tag>value</ns:Tag> or <Tag>value</Tag>
     pattern = rf"<(?:\w+:)?{tag}>(.*?)</(?:\w+:)?{tag}>"
     match = re.search(pattern, xml_str)

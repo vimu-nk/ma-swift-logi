@@ -105,4 +105,3 @@ async def _handle_order_created(body: dict[str, Any]) -> None:
         logger.error("saga_failed", order_id=order_id, error=result.error)
     else:
         logger.info("saga_success", order_id=order_id)
-

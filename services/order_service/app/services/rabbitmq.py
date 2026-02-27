@@ -139,7 +139,9 @@ async def _handle_status_update(body: dict[str, Any]) -> None:
             # Publish downstream for notification_service
             correlation_id = body.get("_correlation_id")
             await publish_order_status(
-                order_id, new_status, correlation_id=correlation_id,
+                order_id,
+                new_status,
+                correlation_id=correlation_id,
             )
 
             # --- Auto Assignment Trigger ---
@@ -161,5 +163,7 @@ async def _handle_status_update(body: dict[str, Any]) -> None:
                         driver=assigned_order.pickup_driver_id,
                     )
                     await publish_order_status(
-                        order_id, "PICKUP_ASSIGNED", correlation_id=correlation_id,
+                        order_id,
+                        "PICKUP_ASSIGNED",
+                        correlation_id=correlation_id,
                     )

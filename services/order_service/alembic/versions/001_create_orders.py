@@ -63,10 +63,7 @@ def upgrade() -> None:
             created_at  TIMESTAMPTZ     NOT NULL DEFAULT now()
         );
     """)
-    op.execute(
-        "CREATE INDEX ix_order_status_history_order_id "
-        "ON order_status_history (order_id);"
-    )
+    op.execute("CREATE INDEX ix_order_status_history_order_id ON order_status_history (order_id);")
 
 
 def downgrade() -> None:

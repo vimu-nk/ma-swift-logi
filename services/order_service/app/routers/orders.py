@@ -104,9 +104,13 @@ async def update_order_status(
 ) -> OrderResponse:
     """Update order status (e.g., driver marks as DELIVERED/FAILED)."""
     allowed = {
-        "PICKING_UP", "PICKED_UP", "AT_WAREHOUSE", 
-        "OUT_FOR_DELIVERY", "DELIVERY_ATTEMPTED",
-        "DELIVERED", "FAILED"
+        "PICKING_UP",
+        "PICKED_UP",
+        "AT_WAREHOUSE",
+        "OUT_FOR_DELIVERY",
+        "DELIVERY_ATTEMPTED",
+        "DELIVERED",
+        "FAILED",
     }
     if payload.status not in allowed:
         raise HTTPException(
@@ -132,14 +136,14 @@ async def update_order_status(
         extra_fields["delivery_driver_id"] = payload.delivery_driver_id
 
     target_status = payload.status
-    
+
     if target_status == "AT_WAREHOUSE":
         # System auto-assigns delivery driver but STAYS at AT_WAREHOUSE
         # Driver will manually transition to OUT_FOR_DELIVERY
         assigned_order = await assign_driver(session, order, "delivery")
         if assigned_order.delivery_driver_id:
             extra_fields["delivery_driver_id"] = assigned_order.delivery_driver_id
-        
+
     elif target_status == "DELIVERY_ATTEMPTED":
         new_attempts = order.delivery_attempts + 1
         extra_fields["delivery_attempts"] = new_attempts

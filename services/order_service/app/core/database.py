@@ -29,6 +29,7 @@ async_session_factory = async_sessionmaker(
 
 class Base(DeclarativeBase):
     """SQLAlchemy declarative base for all Order Service models."""
+
     pass
 
 

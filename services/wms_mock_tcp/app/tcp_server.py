@@ -27,9 +27,7 @@ log = structlog.get_logger()
 _packages: dict[str, dict] = {}
 
 
-async def handle_client(
-    reader: asyncio.StreamReader, writer: asyncio.StreamWriter
-) -> None:
+async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
     """Handle a single TCP client connection."""
     addr = writer.get_extra_info("peername")
     log.info("tcp_client_connected", remote=str(addr))

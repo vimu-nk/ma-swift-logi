@@ -2,15 +2,12 @@
 
 from __future__ import annotations
 
-import asyncio
-import json
 from typing import Any
 
 import structlog
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from shared.rabbitmq import RabbitMQClient
-from app.core.config import settings
 
 router = APIRouter(tags=["WebSocket Tracking"])
 logger = structlog.get_logger()

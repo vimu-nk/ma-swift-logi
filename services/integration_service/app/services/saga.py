@@ -124,7 +124,9 @@ async def execute_order_saga(
 
     # ── Fetch current order status for idempotency ───────
     current_status = await _fetch_order_status(
-        http_client, order_service_url, order_id,
+        http_client,
+        order_service_url,
+        order_id,
     )
     logger.info(
         "saga_idempotency_check",
@@ -141,7 +143,8 @@ async def execute_order_saga(
         try:
             logger.info("saga_step_1_cms", order_id=order_id)
             cms_result = await cms_client.register_order(
-                http_client, cms_url,
+                http_client,
+                cms_url,
                 order_id=order_id,
                 client_id=client_id,
                 pickup_address=pickup_address,
@@ -164,7 +167,8 @@ async def execute_order_saga(
         try:
             logger.info("saga_step_2_wms", order_id=order_id)
             wms_result = await wms_client.add_package(
-                wms_host, wms_port,
+                wms_host,
+                wms_port,
                 order_id=order_id,
                 package_details=package_details,
             )
@@ -188,7 +192,8 @@ async def execute_order_saga(
         try:
             logger.info("saga_step_3_ros", order_id=order_id)
             ros_result = await ros_client.optimize_route(
-                http_client, ros_url,
+                http_client,
+                ros_url,
                 order_id=order_id,
                 delivery_address=delivery_address,
             )
@@ -215,9 +220,7 @@ async def execute_order_saga(
     return result
 
 
-async def _compensate_cms(
-    http_client: httpx.AsyncClient, cms_url: str, order_id: str
-) -> None:
+async def _compensate_cms(http_client: httpx.AsyncClient, cms_url: str, order_id: str) -> None:
     """Compensating action: cancel CMS registration."""
     try:
         await cms_client.cancel_order(http_client, cms_url, order_id=order_id)

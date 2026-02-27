@@ -75,11 +75,11 @@ def create_app() -> FastAPI:
         @application.get("/driver", include_in_schema=False)
         async def serve_driver():
             return FileResponse(str(static_dir / "driver.html"))
-            
+
         @application.get("/pickup", include_in_schema=False)
         async def serve_pickup():
             return FileResponse(str(static_dir / "pickup.html"))
-            
+
         @application.get("/delivery", include_in_schema=False)
         async def serve_delivery():
             return FileResponse(str(static_dir / "delivery.html"))

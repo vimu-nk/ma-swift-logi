@@ -60,11 +60,7 @@ async def update_order_status(
     extra_fields: dict[str, Any] | None = None,
 ) -> Order | None:
     """Transition order to a new status with audit trail."""
-    stmt = (
-        select(Order)
-        .where(Order.id == order_id)
-        .options(selectinload(Order.status_history))
-    )
+    stmt = select(Order).where(Order.id == order_id).options(selectinload(Order.status_history))
     result = await session.execute(stmt)
     order = result.scalar_one_or_none()
 
@@ -101,15 +97,9 @@ async def update_order_status(
     return order
 
 
-async def get_order(
-    session: AsyncSession, order_id: uuid.UUID
-) -> Order | None:
+async def get_order(session: AsyncSession, order_id: uuid.UUID) -> Order | None:
     """Fetch a single order with status history."""
-    stmt = (
-        select(Order)
-        .where(Order.id == order_id)
-        .options(selectinload(Order.status_history))
-    )
+    stmt = select(Order).where(Order.id == order_id).options(selectinload(Order.status_history))
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 

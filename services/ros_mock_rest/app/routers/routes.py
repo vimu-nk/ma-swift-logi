@@ -1,7 +1,7 @@
 """ROS Mock — REST/JSON endpoints simulating a Route Optimisation System."""
 
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import uuid
 import random
 from datetime import datetime, timezone, timedelta
@@ -13,6 +13,7 @@ _routes: dict[str, dict] = {}
 
 
 # ── Schemas ──────────────────────────────────
+
 
 class DeliveryPoint(BaseModel):
     order_id: str
@@ -44,6 +45,7 @@ class OptimizeResponse(BaseModel):
 
 
 # ── Endpoints ────────────────────────────────
+
 
 @router.post("/optimize", response_model=OptimizeResponse)
 async def optimize_route(request: OptimizeRequest) -> OptimizeResponse:

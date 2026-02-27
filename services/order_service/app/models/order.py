@@ -36,7 +36,9 @@ class OrderStatus(str, enum.Enum):
     AT_WAREHOUSE = "AT_WAREHOUSE"
     OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
     DELIVERY_ATTEMPTED = "DELIVERY_ATTEMPTED"
-    DELIVERY_FAILED = "FAILED"  # Keeping enum value as FAILED for backward compatibility but conceptual failure
+    DELIVERY_FAILED = (
+        "FAILED"  # Keeping enum value as FAILED for backward compatibility but conceptual failure
+    )
     DELIVERED = "DELIVERED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
@@ -47,9 +49,7 @@ class Order(Base):
 
     __tablename__ = "orders"
 
-    id: uuid.UUID = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     client_id: str = Column(String(100), nullable=False, index=True)
     status: OrderStatus = Column(
         Enum(OrderStatus, name="order_status"),
@@ -74,11 +74,10 @@ class Order(Base):
     delivery_driver_id: str | None = Column(String(100), nullable=True)
     delivery_notes: str | None = Column(Text, nullable=True)
     proof_of_delivery: dict | None = Column(JSONB, nullable=True)
-    
+
     # Retry logic
     delivery_attempts: int = Column(Integer, nullable=False, default=0)
     max_delivery_attempts: int = Column(Integer, nullable=False, default=3)
-
 
     # Timestamps
     created_at: datetime = Column(
@@ -112,21 +111,15 @@ class OrderStatusHistory(Base):
 
     __tablename__ = "order_status_history"
 
-    id: uuid.UUID = Column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: uuid.UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     order_id: uuid.UUID = Column(
         UUID(as_uuid=True),
         ForeignKey("orders.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    old_status: OrderStatus | None = Column(
-        Enum(OrderStatus, name="order_status"), nullable=True
-    )
-    new_status: OrderStatus = Column(
-        Enum(OrderStatus, name="order_status"), nullable=False
-    )
+    old_status: OrderStatus | None = Column(Enum(OrderStatus, name="order_status"), nullable=True)
+    new_status: OrderStatus = Column(Enum(OrderStatus, name="order_status"), nullable=False)
     details: str | None = Column(Text, nullable=True)
     created_at: datetime = Column(
         DateTime(timezone=True),

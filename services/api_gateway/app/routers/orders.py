@@ -24,7 +24,9 @@ async def _proxy(method: str, path: str, **kwargs: Any) -> dict:
     if response.status_code >= 400:
         raise HTTPException(
             status_code=response.status_code,
-            detail=response.json() if response.headers.get("content-type", "").startswith("application/json") else response.text,
+            detail=response.json()
+            if response.headers.get("content-type", "").startswith("application/json")
+            else response.text,
         )
     return response.json()
 

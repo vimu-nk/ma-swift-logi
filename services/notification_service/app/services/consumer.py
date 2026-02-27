@@ -85,4 +85,3 @@ async def _handle_event(body: dict[str, Any]) -> None:
                 "channel": channel,
             },
         )
-

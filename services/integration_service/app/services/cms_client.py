@@ -57,6 +57,7 @@ async def register_order(
 
     # Extract CMS reference from XML response
     import re
+
     body = response.text
     cms_ref_match = re.search(r"<(?:\w+:)?CmsReference>(.*?)</(?:\w+:)?CmsReference>", body)
     cms_ref = cms_ref_match.group(1) if cms_ref_match else "UNKNOWN"

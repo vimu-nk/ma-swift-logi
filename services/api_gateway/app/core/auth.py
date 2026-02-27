@@ -23,12 +23,10 @@ STUB_USERS = {
     "client3": {"password": "password123", "role": "client", "name": "Client C"},
     "client4": {"password": "password123", "role": "client", "name": "Client D"},
     "client5": {"password": "password123", "role": "client", "name": "Client E"},
-    
     # 3 Drivers
     "driver1": {"password": "password123", "role": "driver", "name": "Driver Kamal"},
     "driver2": {"password": "password123", "role": "driver", "name": "Driver Nimal"},
     "driver3": {"password": "password123", "role": "driver", "name": "Driver Sunimal"},
-    
     # 1 Admin
     "admin": {"password": "admin123", "role": "admin", "name": "System Admin"},
 }

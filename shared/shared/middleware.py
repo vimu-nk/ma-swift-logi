@@ -7,7 +7,6 @@ Injects ``X-Request-ID`` (per-request unique) and forwards
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -25,9 +24,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
         request_id = request.headers.get(_REQUEST_HEADER, str(uuid.uuid4()))
-        correlation_id = request.headers.get(
-            _CORRELATION_HEADER, str(uuid.uuid4())
-        )
+        correlation_id = request.headers.get(_CORRELATION_HEADER, str(uuid.uuid4()))
 
         # Bind to structlog context vars so every log line includes these IDs
         structlog.contextvars.clear_contextvars()

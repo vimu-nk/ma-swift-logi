@@ -53,7 +53,9 @@ async def main() -> None:
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         try:
-            loop.add_signal_handler(sig, lambda: asyncio.create_task(_shutdown(tcp_server, http_server)))
+            loop.add_signal_handler(
+                sig, lambda: asyncio.create_task(_shutdown(tcp_server, http_server))
+            )
         except NotImplementedError:
             pass  # Windows doesn't support add_signal_handler
 

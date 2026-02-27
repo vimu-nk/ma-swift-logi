@@ -24,6 +24,7 @@ if config.config_file_name is not None:
 def _get_url() -> str:
     """Resolve database URL from environment."""
     import os
+
     return os.getenv(
         "DATABASE_URL",
         "postgresql+asyncpg://swifttrack:swifttrack_secret@postgres:5432/swifttrack",
