@@ -68,6 +68,7 @@
 		if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
 		const opts = { method, headers };
+		if (method === "GET") opts.cache = "no-store";
 		if (body) opts.body = JSON.stringify(body);
 
 		const res = await fetch(`${API_BASE}${path}`, opts);
@@ -342,8 +343,15 @@
 		const delivered = orderList.filter(
 			(o) => o.status === "DELIVERED",
 		).length;
-		const inTransit = orderList.filter(
-			(o) => o.status === "IN_TRANSIT",
+		const inTransit = orderList.filter((o) =>
+			[
+				"PICKUP_ASSIGNED",
+				"PICKING_UP",
+				"PICKED_UP",
+				"AT_WAREHOUSE",
+				"OUT_FOR_DELIVERY",
+				"DELIVERY_ATTEMPTED",
+			].includes(o.status),
 		).length;
 		const inProgress = orderList.filter(
 			(o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
@@ -422,14 +430,22 @@
 
 	async function loadDriverOrders() {
 		try {
-			const data = await api("GET", "/api/orders?limit=100");
+			const data = await api(
+				"GET",
+				`/api/orders?driver_id_any=${encodeURIComponent(currentUser.username)}&limit=200`,
+			);
 			const allOrders = data.orders || [];
-			// Show orders that are READY or IN_TRANSIT (assigned to drivers)
 			const driverOrders = allOrders.filter((o) =>
 				[
-					"READY",
-					"IN_TRANSIT",
+					"WMS_RECEIVED",
 					"ROUTE_OPTIMIZED",
+					"READY",
+					"PICKUP_ASSIGNED",
+					"PICKING_UP",
+					"PICKED_UP",
+					"AT_WAREHOUSE",
+					"OUT_FOR_DELIVERY",
+					"DELIVERY_ATTEMPTED",
 					"DELIVERED",
 					"FAILED",
 				].includes(o.status),
@@ -444,10 +460,27 @@
 
 	function updateDriverStats(orderList) {
 		const assigned = orderList.filter((o) =>
-			["READY", "ROUTE_OPTIMIZED"].includes(o.status),
+			[
+				"WMS_RECEIVED",
+				"ROUTE_OPTIMIZED",
+				"READY",
+				"PICKUP_ASSIGNED",
+				"PICKING_UP",
+				"PICKED_UP",
+				"AT_WAREHOUSE",
+				"OUT_FOR_DELIVERY",
+				"DELIVERY_ATTEMPTED",
+			].includes(o.status),
 		).length;
-		const inTransit = orderList.filter(
-			(o) => o.status === "IN_TRANSIT",
+		const inTransit = orderList.filter((o) =>
+			[
+				"PICKUP_ASSIGNED",
+				"PICKING_UP",
+				"PICKED_UP",
+				"AT_WAREHOUSE",
+				"OUT_FOR_DELIVERY",
+				"DELIVERY_ATTEMPTED",
+			].includes(o.status),
 		).length;
 		const delivered = orderList.filter(
 			(o) => o.status === "DELIVERED",
@@ -486,14 +519,26 @@
 	}
 
 	function getDriverActions(order) {
-		if (order.status === "READY" || order.status === "ROUTE_OPTIMIZED") {
-			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="IN_TRANSIT"><i class="ph ph-truck"></i> Start</button>`;
+		if (order.status === "PICKUP_ASSIGNED") {
+			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="PICKING_UP"><i class="ph ph-rocket-launch"></i> Start Pickup</button>`;
 		}
-		if (order.status === "IN_TRANSIT") {
+		if (order.status === "PICKING_UP") {
+			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="PICKED_UP"><i class="ph ph-package"></i> Confirm Pickup</button>`;
+		}
+		if (order.status === "PICKED_UP") {
+			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE"><i class="ph ph-buildings"></i> Drop at Warehouse</button>`;
+		}
+		if (order.status === "AT_WAREHOUSE") {
+			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="OUT_FOR_DELIVERY"><i class="ph ph-truck"></i> Start Delivery</button>`;
+		}
+		if (order.status === "OUT_FOR_DELIVERY") {
 			return `
         <button class="btn btn-sm btn-success" data-action="driver-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
-        <button class="btn btn-sm btn-danger" data-action="driver-status" data-order-id="${order.id}" data-status="FAILED"><i class="ph ph-x-circle"></i> Fail</button>
+        <button class="btn btn-sm btn-danger" data-action="driver-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
       `;
+		}
+		if (order.status === "DELIVERY_ATTEMPTED") {
+			return `<span class="text-muted text-sm">Attempt recorded — returning to warehouse</span>`;
 		}
 		return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
 	}

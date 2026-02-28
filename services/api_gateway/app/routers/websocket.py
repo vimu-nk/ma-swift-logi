@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Any
 
 import structlog
@@ -85,13 +86,17 @@ async def init_ws_consumer(rmq_url: str) -> None:
     _ws_mq_client = RabbitMQClient(rmq_url, service_name="api_gateway_ws")
     await _ws_mq_client.connect()
 
+    queue_name = f"api_gateway.ws_notifications.{os.getpid()}"
+
     await _ws_mq_client.consume(
-        queue_name="api_gateway.ws_notifications",
+        queue_name=queue_name,
         routing_keys=[
             "notification.order_update",
             "notification.status_changed",
         ],
         handler=_handle_ws_event,
+        durable=False,
+        auto_delete=True,
     )
 
 

@@ -149,15 +149,26 @@ class RabbitMQClient:
         queue_name: str,
         routing_keys: list[str],
         handler: Callable[[dict[str, Any]], Awaitable[None]],
+        *,
+        durable: bool = True,
+        auto_delete: bool = False,
+        exclusive: bool = False,
+        arguments: dict[str, Any] | None = None,
     ) -> asyncio.Task:
         """
-        Declare a durable queue, bind it to routing keys, and start consuming.
+        Declare a queue, bind it to routing keys, and start consuming.
         Returns the consumer asyncio.Task so callers can cancel it on shutdown.
         """
         if not self._channel or not self._exchange:
             raise RuntimeError("RabbitMQ not connected — call connect() first")
 
-        queue = await self._channel.declare_queue(queue_name, durable=True)
+        queue = await self._channel.declare_queue(
+            queue_name,
+            durable=durable,
+            auto_delete=auto_delete,
+            exclusive=exclusive,
+            arguments=arguments,
+        )
         for key in routing_keys:
             await queue.bind(self._exchange, routing_key=key)
 

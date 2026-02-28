@@ -192,11 +192,19 @@
 		if (order.status === "AT_WAREHOUSE") {
 			return `<div class="table-action-group"><button class="btn btn-sm btn-action-start" data-action="order-status" data-order-id="${order.id}" data-status="OUT_FOR_DELIVERY"><i class="ph ph-truck"></i> Start Delivery</button></div>`;
 		}
-		return `
+		if (order.status === "OUT_FOR_DELIVERY") {
+			return `
 			<div class="table-action-group">
 				<button class="btn btn-sm btn-action-deliver" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
 				<button class="btn btn-sm btn-action-fail" data-action="order-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
 			</div>
+		`;
+		}
+		if (order.status === "DELIVERY_ATTEMPTED") {
+			return `<span class="text-muted text-sm">Attempt recorded — returning to warehouse</span>`;
+		}
+		return `
+			<span class="text-muted text-sm">${formatStatus(order.status)}</span>
 		`;
 	}
 
