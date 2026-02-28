@@ -26,7 +26,7 @@ class BaseServiceSettings(BaseSettings):
     service_port: int = 8000
 
     # ── RabbitMQ ──────────────────────────────
-    rabbitmq_url: str = "amqp://guest:guest@rabbitmq:5672/"
+    rabbitmq_url: str = "amqp://swifttrack:swifttrack@rabbitmq:5672/"
 
     # ── JWT ───────────────────────────────────
     jwt_secret_key: str = "CHANGE-ME"

@@ -35,19 +35,19 @@ services:
     container_name: swifttrack-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-swifttrack}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-swifttrack}
     ports:
       - "${RABBITMQ_PORT:-5672}:5672"
       - "${RABBITMQ_MGMT_PORT:-15672}:15672"
     networks:
       - swifttrack-net
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
       timeout: 20s
-      retries: 5
-      start_period: 45s
+      retries: 12
+      start_period: 90s
 
   # ──────────────────────────────────────────────
   # Application Services
@@ -66,7 +66,7 @@ services:
       SERVICE_PORT: "8000"
     depends_on:
       rabbitmq:
-        condition: service_healthy
+        condition: service_started
     networks:
       - swifttrack-net
     healthcheck:
@@ -92,7 +92,7 @@ services:
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy
+        condition: service_started
     networks:
       - swifttrack-net
     healthcheck:
@@ -116,7 +116,7 @@ services:
       SERVICE_PORT: "8002"
     depends_on:
       rabbitmq:
-        condition: service_healthy
+        condition: service_started
     networks:
       - swifttrack-net
     healthcheck:
@@ -140,7 +140,7 @@ services:
       SERVICE_PORT: "8003"
     depends_on:
       rabbitmq:
-        condition: service_healthy
+        condition: service_started
     networks:
       - swifttrack-net
     healthcheck:

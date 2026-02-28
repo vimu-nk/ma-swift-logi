@@ -28,7 +28,33 @@ class RabbitMQClient:
 
     async def connect(self) -> None:
         """Establish connection and declare exchange."""
-        self._connection = await aio_pika.connect_robust(self._url)
+        retries = 30
+        delay_seconds = 2
+        last_error: Exception | None = None
+
+        for attempt in range(1, retries + 1):
+            try:
+                self._connection = await aio_pika.connect_robust(self._url)
+                break
+            except Exception as exc:
+                last_error = exc
+                logger.warning(
+                    "rabbitmq_connect_retry",
+                    service=self._service_name,
+                    attempt=attempt,
+                    retries=retries,
+                    delay_seconds=delay_seconds,
+                    error=str(exc),
+                )
+                if attempt == retries:
+                    raise
+                await asyncio.sleep(delay_seconds)
+
+        if self._connection is None:
+            raise RuntimeError(
+                f"Failed to establish RabbitMQ connection for {self._service_name}: {last_error}"
+            )
+
         self._channel = await self._connection.channel()
         await self._channel.set_qos(prefetch_count=10)
 
