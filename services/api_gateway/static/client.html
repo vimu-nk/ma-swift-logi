@@ -6,8 +6,8 @@
   <meta name="description" content="SwiftTrack &mdash; Client Order Dashboard">
   <title>SwiftTrack &mdash; My Orders</title>
   <link rel="stylesheet" href="/static/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0 L10 60 L50 60 L40 100 L90 40 L50 40 Z' fill='#3b82f6'/></svg>">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
 </head>
 <body>
 
@@ -17,8 +17,8 @@
   <!-- Navigation -->
   <nav class="navbar">
     <a class="navbar-brand" href="/client">
-      <div class="logo"><i class="ph-fill ph-lightning"></i></div>
-      <span class="text-gradient">SwiftTrack</span>
+      <div class="logo"><i class="fa-solid fa-truck-fast"></i></div>
+      <span>SwiftTrack</span>
     </a>
     <div class="navbar-right">
       <div class="ws-indicator disconnected" id="ws-status" title="WebSocket disconnected"></div>
@@ -35,31 +35,31 @@
 
     <!-- --- Client Dashboard --- -->
     <div class="dashboard-header">
-      <h1><i class="ph ph-package"></i> My Orders</h1>
+      <h1><i class="fa-solid fa-box"></i> My Orders</h1>
       <div class="dashboard-actions">
-        <button class="btn btn-sm btn-secondary" id="refresh-orders-btn"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
+        <button class="btn btn-sm btn-secondary" id="refresh-orders-btn"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
       </div>
     </div>
 
     <!-- Stats -->
     <div class="stats-grid" id="client-stats">
       <div class="stat-card cyan">
-        <div class="stat-icon"><i class='ph ph-clipboard-text'></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
         <div class="stat-value" id="stat-total">0</div>
         <div class="stat-label">Total Orders</div>
       </div>
       <div class="stat-card green">
-        <div class="stat-icon"><i class="ph ph-check-circle"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-value" id="stat-delivered">0</div>
         <div class="stat-label">Delivered</div>
       </div>
       <div class="stat-card purple">
-        <div class="stat-icon"><i class="ph ph-arrows-clockwise"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
         <div class="stat-value" id="stat-in-progress">0</div>
         <div class="stat-label">In Progress</div>
       </div>
       <div class="stat-card amber">
-        <div class="stat-icon"><i class="ph ph-truck"></i></div>
+        <div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
         <div class="stat-value" id="stat-in-transit">0</div>
         <div class="stat-label">In Transit</div>
       </div>
@@ -70,7 +70,7 @@
       <!-- Create Form -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title"><span class="icon"><i class='ph ph-plus'></i></span> New Order</h3>
+          <h3 class="card-title"><span class="icon"><i class="fa-solid fa-plus"></i></span> New Order</h3>
         </div>
         <form id="create-order-form">
           <div class="form-row">
@@ -111,7 +111,7 @@
             <input class="form-input" id="pkg-description" type="text" placeholder="Electronics, documents...">
           </div>
           <button type="submit" class="btn btn-primary" id="create-order-btn" style="width:100%">
-            <i class="ph ph-rocket-launch"></i> Create Order
+            <i class="fa-solid fa-paper-plane"></i> Create Order
           </button>
         </form>
       </div>
@@ -119,7 +119,7 @@
       <!-- Orders Table -->
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title"><span class="icon"><i class='ph ph-clipboard-text'></i></span> Orders</h3>
+          <h3 class="card-title"><span class="icon"><i class="fa-solid fa-list"></i></span> Orders</h3>
           <select class="form-select" id="filter-status" style="width:auto;min-width:140px;">
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -153,7 +153,7 @@
           </table>
         </div>
         <div class="empty-state" id="orders-empty">
-          <div class="empty-icon"><i class="ph ph-mailbox"></i></div>
+          <div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
           <p>No orders yet. Create your first order!</p>
         </div>
       </div>
@@ -166,7 +166,7 @@
 <div class="modal-overlay" id="order-modal">
   <div class="modal">
     <div class="modal-header">
-      <h2><i class="ph ph-package"></i> Order Details</h2>
+      <h2><i class="fa-solid fa-box"></i> Order Details</h2>
       <button class="modal-close" id="modal-close">&times;</button>
     </div>
     <div id="modal-body">
