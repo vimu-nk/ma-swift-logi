@@ -31,11 +31,11 @@
 		const tabs = $$(".tab-btn");
 		const panes = $$(".tab-pane");
 
-		tabs.forEach(tab => {
+		tabs.forEach((tab) => {
 			tab.addEventListener("click", () => {
 				// Remove active class from all
-				tabs.forEach(t => t.classList.remove("active"));
-				panes.forEach(p => p.classList.remove("active"));
+				tabs.forEach((t) => t.classList.remove("active"));
+				panes.forEach((p) => p.classList.remove("active"));
 
 				// Add active to clicked tab and corresponding pane
 				tab.classList.add("active");
@@ -49,23 +49,36 @@
 	async function loadDriverData() {
 		try {
 			// Fetch all orders related to this driver
-			const data = await api("GET", `/api/orders?driver_id=${currentUser.username}&limit=200`);
+			const data = await api(
+				"GET",
+				`/api/orders?driver_id=${currentUser.username}&limit=200`,
+			);
 			const allOrders = data.orders || [];
 
 			// Categorize orders
 			const pickups = allOrders.filter(
-				(o) => o.pickup_driver_id === currentUser.username &&
-				["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(o.status)
+				(o) =>
+					o.pickup_driver_id === currentUser.username &&
+					["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(
+						o.status,
+					),
 			);
 
 			const deliveries = allOrders.filter(
-				(o) => o.delivery_driver_id === currentUser.username &&
-				["AT_WAREHOUSE", "OUT_FOR_DELIVERY", "DELIVERY_ATTEMPTED"].includes(o.status)
+				(o) =>
+					o.delivery_driver_id === currentUser.username &&
+					[
+						"AT_WAREHOUSE",
+						"OUT_FOR_DELIVERY",
+						"DELIVERY_ATTEMPTED",
+					].includes(o.status),
 			);
 
 			const completed = allOrders.filter(
-				(o) => (o.pickup_driver_id === currentUser.username || o.delivery_driver_id === currentUser.username) &&
-				["DELIVERED", "FAILED"].includes(o.status)
+				(o) =>
+					(o.pickup_driver_id === currentUser.username ||
+						o.delivery_driver_id === currentUser.username) &&
+					["DELIVERED", "FAILED"].includes(o.status),
 			);
 
 			// Update dashboard stats
@@ -77,7 +90,6 @@
 			renderPickups(pickups);
 			renderDeliveries(deliveries);
 			renderCompleted(completed);
-
 		} catch (e) {
 			console.error("Failed to load driver data:", e);
 		}
@@ -95,14 +107,20 @@
 		}
 
 		empty.classList.add("hidden");
-		tbody.innerHTML = orderList.map((order) => {
-			const actions = getPickupActions(order);
-			const packageDetails = typeof order.package_details === 'string' ? JSON.parse(order.package_details) : (order.package_details || {});
-			const details = packageDetails.weight ? `${packageDetails.weight}kg (${packageDetails.dimensions || 'N/A'})` : '-';
+		tbody.innerHTML = orderList
+			.map((order) => {
+				const actions = getPickupActions(order);
+				const packageDetails =
+					typeof order.package_details === "string"
+						? JSON.parse(order.package_details)
+						: order.package_details || {};
+				const details = packageDetails.weight
+					? `${packageDetails.weight}kg (${packageDetails.dimensions || "N/A"})`
+					: "-";
 
-			return `
+				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+		  <td><span class="order-id clickable" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>
 			<div style="font-size:0.85em; opacity:0.8">${truncate(order.sender_name, 30)}</div>
@@ -116,7 +134,8 @@
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
-		}).join("");
+			})
+			.join("");
 	}
 
 	function getPickupActions(order) {
@@ -144,23 +163,25 @@
 		}
 
 		empty.classList.add("hidden");
-		tbody.innerHTML = orderList.map((order) => {
-			const actions = getDeliveryActions(order);
-			const formatAttempts = `${order.delivery_attempts || 0} / ${order.max_delivery_attempts || 3}`;
-			
-			return `
+		tbody.innerHTML = orderList
+			.map((order) => {
+				const actions = getDeliveryActions(order);
+				const formatAttempts = `${order.delivery_attempts || 0} / ${order.max_delivery_attempts || 3}`;
+
+				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+		  <td><span class="order-id clickable" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>
             <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 40)}</div>
             <strong>${truncate(order.delivery_address, 40)}</strong>
           </td>
-          <td><span class="badge ${order.delivery_attempts > 0 ? 'badge-amber' : ''}">${formatAttempts}</span></td>
+          <td><span class="badge ${order.delivery_attempts > 0 ? "badge-amber" : ""}">${formatAttempts}</span></td>
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
-		}).join("");
+			})
+			.join("");
 	}
 
 	function getDeliveryActions(order) {
@@ -187,27 +208,33 @@
 		}
 
 		empty.classList.add("hidden");
-		tbody.innerHTML = orderList.map((order) => {
-			return `
+		tbody.innerHTML = orderList
+			.map((order) => {
+				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+		  <td><span class="order-id clickable" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>${truncate(order.pickup_address, 30)}</td>
           <td>${truncate(order.delivery_address, 30)}</td>
         </tr>
       `;
-		}).join("");
+			})
+			.join("");
 	}
 
 	// ── Actions ───────────────────────────────────────────
 	async function orderAction(orderId, newStatus) {
 		try {
 			const payload = { status: newStatus };
-			
+
 			if (newStatus === "DELIVERY_ATTEMPTED") {
-				const notes = await ST.showPromptDialog("Failure Reason", "Enter failure reason (optional):", "e.g. Customer not home");
+				const notes = await ST.showPromptDialog(
+					"Failure Reason",
+					"Enter failure reason (optional):",
+					"e.g. Customer not home",
+				);
 				if (notes === null) return; // Cancelled
-				if (notes.trim() !== '') {
+				if (notes.trim() !== "") {
 					payload.delivery_notes = notes;
 				}
 			}
@@ -229,7 +256,9 @@
 		initShell();
 		initTabs();
 
-		$("#refresh-driver-btn").addEventListener("click", () => loadDriverData());
+		$("#refresh-driver-btn").addEventListener("click", () =>
+			loadDriverData(),
+		);
 
 		document.addEventListener("click", (e) => {
 			const actionEl = e.target.closest('[data-action="order-status"]');

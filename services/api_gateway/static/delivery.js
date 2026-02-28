@@ -28,13 +28,19 @@
 	// ── Data Loading ──────────────────────────────────────
 	async function loadDeliveries() {
 		try {
-			// Get orders where this driver is involved 
-			const data = await api("GET", `/api/orders?driver_id=${currentUser.username}&limit=200`);
+			// Get orders where this driver is involved
+			const data = await api(
+				"GET",
+				`/api/orders?driver_id=${currentUser.username}&limit=200`,
+			);
 			const allOrders = data.orders || [];
-			
+
 			const myDeliveries = allOrders.filter(
-				(o) => o.delivery_driver_id === currentUser.username && 
-				["OUT_FOR_DELIVERY", "DELIVERY_ATTEMPTED"].includes(o.status)
+				(o) =>
+					o.delivery_driver_id === currentUser.username &&
+					["OUT_FOR_DELIVERY", "DELIVERY_ATTEMPTED"].includes(
+						o.status,
+					),
 			);
 
 			renderDeliveries(myDeliveries);
@@ -58,16 +64,16 @@
 			.map((order) => {
 				const actions = getDeliveryActions(order);
 				const formatAttempts = `${order.delivery_attempts || 0} / ${order.max_delivery_attempts || 3}`;
-				
+
 				return `
         <tr>
-          <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+		  <td><span class="order-id clickable" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
           <td>
             <div style="font-size:0.85em; opacity:0.8">${truncate(order.receiver_name, 40)}</div>
             <strong>${truncate(order.delivery_address, 40)}</strong>
           </td>
-          <td><span class="badge ${order.delivery_attempts > 0 ? 'badge-amber' : ''}">${formatAttempts}</span></td>
+          <td><span class="badge ${order.delivery_attempts > 0 ? "badge-amber" : ""}">${formatAttempts}</span></td>
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
@@ -87,11 +93,15 @@
 	async function deliveryAction(orderId, newStatus) {
 		try {
 			const payload = { status: newStatus };
-			
+
 			// If failed attempt, maybe prompt for reason? We will keep it simple and just send.
 			if (newStatus === "DELIVERY_ATTEMPTED") {
-				const notes = await ST.showPromptDialog("Failure Reason", "Enter failure reason (optional):", "e.g. Customer not home");
-				if (notes !== null && notes.trim() !== '') {
+				const notes = await ST.showPromptDialog(
+					"Failure Reason",
+					"Enter failure reason (optional):",
+					"e.g. Customer not home",
+				);
+				if (notes !== null && notes.trim() !== "") {
 					payload.delivery_notes = notes;
 				} else if (notes === null) {
 					return; // Cancelled
@@ -114,10 +124,14 @@
 	function init() {
 		initShell();
 
-		$("#refresh-delivery-btn").addEventListener("click", () => loadDeliveries());
+		$("#refresh-delivery-btn").addEventListener("click", () =>
+			loadDeliveries(),
+		);
 
 		document.addEventListener("click", (e) => {
-			const actionEl = e.target.closest('[data-action="delivery-status"]');
+			const actionEl = e.target.closest(
+				'[data-action="delivery-status"]',
+			);
 			if (actionEl) {
 				const orderId = actionEl.dataset.orderId;
 				const status = actionEl.dataset.status;

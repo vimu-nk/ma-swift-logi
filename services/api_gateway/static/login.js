@@ -3,70 +3,70 @@
    ═══════════════════════════════════════════════════════════ */
 
 (() => {
-  'use strict';
+	"use strict";
 
-  const { $, $$, login, redirectIfAuthenticated, showToast, getUser } = window.SwiftTrack;
+	const { $, $$, login, redirectIfAuthenticated, showToast, getUser } =
+		window.SwiftTrack;
 
-  function init() {
-    // If already authenticated, redirect to dashboard
-    if (redirectIfAuthenticated()) return;
+	function init() {
+		// If already authenticated, redirect to dashboard
+		if (redirectIfAuthenticated()) return;
 
-    // Login form
-    $('#login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const errEl = $('#login-error');
-      errEl.classList.remove('visible');
+		// Login form
+		$("#login-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const errEl = $("#login-error");
+			errEl.classList.remove("visible");
 
-      const username = $('#login-username').value.trim();
-      const password = $('#login-password').value;
+			const username = $("#login-username").value.trim();
+			const password = $("#login-password").value;
 
-      if (!username || !password) return;
+			if (!username || !password) return;
 
-      const btn = $('#login-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Signing in...';
+			const btn = $("#login-btn");
+			btn.disabled = true;
+			btn.innerHTML = '<span class="spinner"></span> Signing in...';
 
-      try {
-        await login(username, password);
-        const user = getUser();
-        window.location.replace('/' + user.role);
-      } catch (e) {
-        errEl.textContent = e.message;
-        errEl.classList.add('visible');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Sign In';
-      }
-    });
+			try {
+				await login(username, password);
+				const user = getUser();
+				window.location.replace("/" + user.role);
+			} catch (e) {
+				errEl.textContent = e.message;
+				errEl.classList.add("visible");
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = "Sign In";
+			}
+		});
 
-    // Demo account chips
-    $$('.demo-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        $('#login-username').value = chip.dataset.user;
-        $('#login-password').value = chip.dataset.pass;
-      });
-    });
+		// Demo account chips
+		$$(".demo-chip").forEach((chip) => {
+			chip.addEventListener("click", () => {
+				$("#login-username").value = chip.dataset.user;
+				$("#login-password").value = chip.dataset.pass;
+			});
+		});
 
-    // Password visibility toggle
-    $('#toggle-password').addEventListener('click', () => {
-      const pw = $('#login-password');
-      const btn = $('#toggle-password');
-      if (pw.type === 'password') {
-        pw.type = 'text';
-        btn.innerHTML = '<i class="ph-fill ph-eye-slash" style="font-size: 1.2rem; color: var(--text-muted)"></i>';
-        btn.title = 'Hide password';
-      } else {
-        pw.type = 'password';
-        btn.innerHTML = '<i class="ph-fill ph-eye" style="font-size: 1.2rem; color: var(--text-muted)"></i>';
-        btn.title = 'Show password';
-      }
-    });
-  }
+		// Password visibility toggle
+		$("#toggle-password").addEventListener("click", () => {
+			const pw = $("#login-password");
+			const btn = $("#toggle-password");
+			if (pw.type === "password") {
+				pw.type = "text";
+				btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i>';
+				btn.title = "Hide password";
+			} else {
+				pw.type = "password";
+				btn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+				btn.title = "Show password";
+			}
+		});
+	}
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", init);
+	} else {
+		init();
+	}
 })();

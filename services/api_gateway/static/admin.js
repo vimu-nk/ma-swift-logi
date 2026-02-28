@@ -59,9 +59,8 @@
 			(o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
 		).length;
 		const failed = orderList.filter((o) => o.status === "FAILED").length;
-		const activePickups = orderList.filter(
-			(o) =>
-				["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(o.status),
+		const activePickups = orderList.filter((o) =>
+			["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(o.status),
 		).length;
 
 		$("#admin-stat-total").textContent = total;
@@ -91,7 +90,7 @@
 			.map(
 				(order) => `
       <tr>
-        <td><span class="order-id" style="cursor: pointer; text-decoration: underline;" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
+		<td><span class="order-id clickable" data-action="view-order" data-order-id="${order.id}">${order.display_id || shortId(order.id)}</span></td>
         <td class="text-sm">${order.sender_name || order.client_id}</td>
         <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
         <td>
@@ -129,8 +128,11 @@
 			.map((driver) => {
 				const assignedCount = orderList.filter(
 					(o) =>
-						(o.pickup_driver_id === driver.username || o.delivery_driver_id === driver.username) &&
-						!["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
+						(o.pickup_driver_id === driver.username ||
+							o.delivery_driver_id === driver.username) &&
+						!["DELIVERED", "FAILED", "CANCELLED"].includes(
+							o.status,
+						),
 				).length;
 
 				return `

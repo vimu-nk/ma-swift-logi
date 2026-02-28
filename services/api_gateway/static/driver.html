@@ -3,11 +3,21 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="description" content="SwiftTrack &mdash; Driver Dashboard" />
+		<meta
+			name="description"
+			content="SwiftTrack &mdash; Driver Dashboard"
+		/>
 		<title>SwiftTrack &mdash; Driver Dashboard</title>
 		<link rel="stylesheet" href="/static/styles.css" />
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-		<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+		/>
+		<link
+			rel="icon"
+			type="image/svg+xml"
+			href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E"
+		/>
 	</head>
 	<body>
 		<!-- ----------- App Shell (Nav) ----------- -->
@@ -15,7 +25,9 @@
 			<!-- Navigation -->
 			<nav class="navbar">
 				<a class="navbar-brand" href="/driver">
-					<div class="logo"><i class="fa-solid fa-truck-fast"></i></div>
+					<div class="logo">
+						<i class="fa-solid fa-truck-fast"></i>
+					</div>
 					<span>SwiftTrack</span>
 				</a>
 				<div class="navbar-right">
@@ -24,6 +36,14 @@
 						id="ws-status"
 						title="WebSocket disconnected"
 					></div>
+					<button
+						class="theme-toggle"
+						id="theme-toggle"
+						title="Toggle theme"
+						aria-label="Toggle dark mode"
+					>
+						<i class="fa-solid fa-moon"></i>
+					</button>
 					<div class="navbar-user">
 						<span class="user-name" id="nav-user-name"></span>
 						<span class="user-role" id="nav-user-role"></span>
@@ -51,26 +71,42 @@
 
 				<div class="stats-grid" id="driver-stats">
 					<div class="stat-card cyan">
-						<div class="stat-icon"><i class="fa-solid fa-box"></i></div>
+						<div class="stat-icon">
+							<i class="fa-solid fa-box"></i>
+						</div>
 						<div class="stat-value" id="driver-stat-pickup">0</div>
 						<div class="stat-label">Active Pickups</div>
 					</div>
 					<div class="stat-card amber">
-						<div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
-						<div class="stat-value" id="driver-stat-delivery">0</div>
+						<div class="stat-icon">
+							<i class="fa-solid fa-truck"></i>
+						</div>
+						<div class="stat-value" id="driver-stat-delivery">
+							0
+						</div>
 						<div class="stat-label">Active Deliveries</div>
 					</div>
 					<div class="stat-card green">
-						<div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-						<div class="stat-value" id="driver-stat-completed">0</div>
+						<div class="stat-icon">
+							<i class="fa-solid fa-circle-check"></i>
+						</div>
+						<div class="stat-value" id="driver-stat-completed">
+							0
+						</div>
 						<div class="stat-label">Completed Today</div>
 					</div>
 				</div>
 
-				<div class="tabs" id="driver-tabs" style="margin-top: var(--space-xl);">
-					<button class="tab-btn active" data-target="tab-pickups">Pickups</button>
-					<button class="tab-btn" data-target="tab-deliveries">Deliveries</button>
-					<button class="tab-btn" data-target="tab-completed">Completed</button>
+				<div class="tabs" id="driver-tabs">
+					<button class="tab-btn active" data-target="tab-pickups">
+						Pickups
+					</button>
+					<button class="tab-btn" data-target="tab-deliveries">
+						Deliveries
+					</button>
+					<button class="tab-btn" data-target="tab-completed">
+						Completed
+					</button>
 				</div>
 
 				<div class="tab-content">
@@ -78,7 +114,12 @@
 					<div class="tab-pane active" id="tab-pickups">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-box"></i></span> My Pickups</h3>
+								<h3 class="card-title">
+									<span class="icon"
+										><i class="fa-solid fa-box"></i
+									></span>
+									My Pickups
+								</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="pickup-table">
@@ -95,8 +136,12 @@
 								</table>
 							</div>
 							<div class="empty-state hidden" id="pickup-empty">
-								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
-								<p>No active pickups assigned to you right now.</p>
+								<div class="empty-icon">
+									<i class="fa-solid fa-inbox"></i>
+								</div>
+								<p>
+									No active pickups assigned to you right now.
+								</p>
 							</div>
 						</div>
 					</div>
@@ -105,7 +150,12 @@
 					<div class="tab-pane" id="tab-deliveries">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-truck"></i></span> My Deliveries</h3>
+								<h3 class="card-title">
+									<span class="icon"
+										><i class="fa-solid fa-truck"></i
+									></span>
+									My Deliveries
+								</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="delivery-table">
@@ -122,8 +172,13 @@
 								</table>
 							</div>
 							<div class="empty-state hidden" id="delivery-empty">
-								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
-								<p>No active deliveries assigned to you right now.</p>
+								<div class="empty-icon">
+									<i class="fa-solid fa-inbox"></i>
+								</div>
+								<p>
+									No active deliveries assigned to you right
+									now.
+								</p>
 							</div>
 						</div>
 					</div>
@@ -132,7 +187,12 @@
 					<div class="tab-pane" id="tab-completed">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> Completed Orders</h3>
+								<h3 class="card-title">
+									<span class="icon"
+										><i class="fa-solid fa-circle-check"></i
+									></span>
+									Completed Orders
+								</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="completed-table">
@@ -147,14 +207,18 @@
 									<tbody id="completed-tbody"></tbody>
 								</table>
 							</div>
-							<div class="empty-state hidden" id="completed-empty">
-								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
+							<div
+								class="empty-state hidden"
+								id="completed-empty"
+							>
+								<div class="empty-icon">
+									<i class="fa-solid fa-inbox"></i>
+								</div>
 								<p>No completed orders today.</p>
 							</div>
 						</div>
 					</div>
 				</div>
-
 			</main>
 		</div>
 
@@ -169,9 +233,7 @@
 				</div>
 				<div id="modal-body">
 					<div class="detail-grid" id="modal-details"></div>
-					<h3 class="mb-md" style="font-size: 0.9rem">
-						Status Timeline
-					</h3>
+					<h3 class="mb-md timeline-heading">Status Timeline</h3>
 					<div class="timeline" id="modal-timeline"></div>
 				</div>
 			</div>

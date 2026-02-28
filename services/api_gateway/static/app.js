@@ -4,304 +4,384 @@
    ═══════════════════════════════════════════════════════════ */
 
 (() => {
-  'use strict';
+	"use strict";
 
-  // ── Constants ─────────────────────────────────────────
-  const API_BASE = '';
-  const WS_BASE = `ws://${location.host}`;
-  const TOKEN_KEY = 'swifttrack_token';
-  const USER_KEY = 'swifttrack_user';
+	// ── Constants ─────────────────────────────────────────
+	const API_BASE = "";
+	const WS_BASE = `ws://${location.host}`;
+	const TOKEN_KEY = "swifttrack_token";
+	const USER_KEY = "swifttrack_user";
+	const THEME_KEY = "swifttrack_theme";
 
-  // ── State ─────────────────────────────────────────────
-  let currentUser = null;
-  let authToken = null;
-  let ws = null;
-  let orders = [];
-  let pollingInterval = null;
+	// ── State ─────────────────────────────────────────────
+	let currentUser = null;
+	let authToken = null;
+	let ws = null;
+	let orders = [];
+	let pollingInterval = null;
 
-  // ── DOM Helpers ───────────────────────────────────────
-  const $ = (sel) => document.querySelector(sel);
-  const $$ = (sel) => document.querySelectorAll(sel);
+	// ── DOM Helpers ───────────────────────────────────────
+	const $ = (sel) => document.querySelector(sel);
+	const $$ = (sel) => document.querySelectorAll(sel);
 
-  // ── API Client ────────────────────────────────────────
-  async function api(method, path, body = null) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+	// ── Theme ─────────────────────────────────────────────
+	function getPreferredTheme() {
+		const saved = localStorage.getItem(THEME_KEY);
+		if (saved === "light" || saved === "dark") return saved;
+		return window.matchMedia("(prefers-color-scheme: dark)").matches
+			? "dark"
+			: "light";
+	}
 
-    const opts = { method, headers };
-    if (body) opts.body = JSON.stringify(body);
+	function updateThemeToggleIcon(theme) {
+		const icon = document.querySelector("#theme-toggle i");
+		if (!icon) return;
+		icon.className =
+			theme === "dark" ? "fa-solid fa-sun" : "fa-solid fa-moon";
+	}
 
-    const res = await fetch(`${API_BASE}${path}`, opts);
-    const data = await res.json();
+	function applyTheme(theme, persist = true) {
+		if (theme !== "light" && theme !== "dark") return;
+		document.documentElement.setAttribute("data-theme", theme);
+		if (persist) localStorage.setItem(THEME_KEY, theme);
+		updateThemeToggleIcon(theme);
+	}
 
-    if (!res.ok) {
-      throw new Error(data.detail || `API error: ${res.status}`);
-    }
-    return data;
-  }
+	function bindThemeToggle() {
+		const toggleBtn = $("#theme-toggle");
+		if (!toggleBtn || toggleBtn.dataset.bound === "true") return;
+		toggleBtn.addEventListener("click", () => {
+			const current =
+				document.documentElement.getAttribute("data-theme") ||
+				getPreferredTheme();
+			applyTheme(current === "dark" ? "light" : "dark");
+		});
+		toggleBtn.dataset.bound = "true";
+		updateThemeToggleIcon(
+			document.documentElement.getAttribute("data-theme") ||
+				getPreferredTheme(),
+		);
+	}
 
-  // ── Auth Module ───────────────────────────────────────
-  function loadSession() {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const user = localStorage.getItem(USER_KEY);
-    if (token && user) {
-      authToken = token;
-      currentUser = JSON.parse(user);
-      return true;
-    }
-    return false;
-  }
+	// ── API Client ────────────────────────────────────────
+	async function api(method, path, body = null) {
+		const headers = { "Content-Type": "application/json" };
+		if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
-  function saveSession(token, user) {
-    authToken = token;
-    currentUser = user;
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  }
+		const opts = { method, headers };
+		if (body) opts.body = JSON.stringify(body);
 
-  function clearSession() {
-    authToken = null;
-    currentUser = null;
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    if (ws) { ws.close(); ws = null; }
-    if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
-  }
+		const res = await fetch(`${API_BASE}${path}`, opts);
+		const data = await res.json();
 
-  async function login(username, password) {
-    const data = await api('POST', '/api/auth/login', { username, password });
-    saveSession(data.access_token, {
-      username: data.username,
-      role: data.role,
-      name: data.name,
-    });
-    return data;
-  }
+		if (!res.ok) {
+			throw new Error(data.detail || `API error: ${res.status}`);
+		}
+		return data;
+	}
 
-  // ── Router ────────────────────────────────────────────
+	// ── Auth Module ───────────────────────────────────────
+	function loadSession() {
+		const token = localStorage.getItem(TOKEN_KEY);
+		const user = localStorage.getItem(USER_KEY);
+		if (token && user) {
+			authToken = token;
+			currentUser = JSON.parse(user);
+			return true;
+		}
+		return false;
+	}
 
-  // Route registry: path → { viewId, requiredRole, loader }
-  // requiredRole: if set, only users with that role may access the route.
-  //               if null, the route is public (e.g. /login).
-  const ROUTES = {
-    '/login':  { viewId: 'view-login',  requiredRole: null,     loader: null },
-    '/client': { viewId: 'view-client', requiredRole: 'client', loader: loadClientDashboard },
-    '/driver': { viewId: 'view-driver', requiredRole: 'driver', loader: loadDriverDashboard },
-    '/admin':  { viewId: 'view-admin',  requiredRole: 'admin',  loader: loadAdminDashboard },
-  };
+	function saveSession(token, user) {
+		authToken = token;
+		currentUser = user;
+		localStorage.setItem(TOKEN_KEY, token);
+		localStorage.setItem(USER_KEY, JSON.stringify(user));
+	}
 
-  function showView(viewId) {
-    $$('.view').forEach(v => v.classList.remove('active'));
-    const view = $(`#${viewId}`);
-    if (view) view.classList.add('active');
-  }
+	function clearSession() {
+		authToken = null;
+		currentUser = null;
+		localStorage.removeItem(TOKEN_KEY);
+		localStorage.removeItem(USER_KEY);
+		if (ws) {
+			ws.close();
+			ws = null;
+		}
+		if (pollingInterval) {
+			clearInterval(pollingInterval);
+			pollingInterval = null;
+		}
+	}
 
-  /** Map a user role to its default route path. */
-  function roleToPath(role) {
-    return ROUTES['/' + role] ? '/' + role : '/client';
-  }
+	async function login(username, password) {
+		const data = await api("POST", "/api/auth/login", {
+			username,
+			password,
+		});
+		saveSession(data.access_token, {
+			username: data.username,
+			role: data.role,
+			name: data.name,
+		});
+		return data;
+	}
 
-  /**
-   * Navigate to a path via history.pushState.
-   * This is the primary way to change routes programmatically.
-   */
-  function navigateTo(path) {
-    // If not authenticated, always go to /login
-    if (!currentUser) path = '/login';
+	// ── Router ────────────────────────────────────────────
 
-    history.pushState(null, '', path);
-    handleRoute();
-  }
+	// Route registry: path → { viewId, requiredRole, loader }
+	// requiredRole: if set, only users with that role may access the route.
+	//               if null, the route is public (e.g. /login).
+	const ROUTES = {
+		"/login": { viewId: "view-login", requiredRole: null, loader: null },
+		"/client": {
+			viewId: "view-client",
+			requiredRole: "client",
+			loader: loadClientDashboard,
+		},
+		"/driver": {
+			viewId: "view-driver",
+			requiredRole: "driver",
+			loader: loadDriverDashboard,
+		},
+		"/admin": {
+			viewId: "view-admin",
+			requiredRole: "admin",
+			loader: loadAdminDashboard,
+		},
+	};
 
-  /**
-   * Core route resolver — reads location.pathname and activates
-   * the correct view. Enforces auth + role guards.
-   * Supports dynamic routes: /orders/:id
-   */
+	function showView(viewId) {
+		$$(".view").forEach((v) => v.classList.remove("active"));
+		const view = $(`#${viewId}`);
+		if (view) view.classList.add("active");
+	}
 
-  /** Pattern for dynamic order route: /orders/<uuid-or-id> */
-  const ORDER_ROUTE_RE = /^\/orders\/([a-zA-Z0-9_-]+)$/;
+	/** Map a user role to its default route path. */
+	function roleToPath(role) {
+		return ROUTES["/" + role] ? "/" + role : "/client";
+	}
 
-  function handleRoute() {
-    const path = location.pathname;
-    const route = ROUTES[path];
+	/**
+	 * Navigate to a path via history.pushState.
+	 * This is the primary way to change routes programmatically.
+	 */
+	function navigateTo(path) {
+		// If not authenticated, always go to /login
+		if (!currentUser) path = "/login";
 
-    // ── 1. Not authenticated ────────────────────────────
-    if (!currentUser) {
-      // Allow /login; everything else redirects to /login
-      if (route && route.requiredRole === null) {
-        $('#app-shell').classList.add('hidden');
-        showView(route.viewId);
-        return;
-      }
-      $('#app-shell').classList.add('hidden');
-      showView('view-login');
-      if (path !== '/login') {
-        history.replaceState(null, '', '/login');
-      }
-      return;
-    }
+		history.pushState(null, "", path);
+		handleRoute();
+	}
 
-    // ── 2. Authenticated user on /login (or root /) ─────
-    if (path === '/login' || path === '/') {
-      const target = roleToPath(currentUser.role);
-      history.replaceState(null, '', target);
-      handleRoute();
-      return;
-    }
+	/**
+	 * Core route resolver — reads location.pathname and activates
+	 * the correct view. Enforces auth + role guards.
+	 * Supports dynamic routes: /orders/:id
+	 */
 
-    // ── 3. Dynamic route: /orders/:id ───────────────────
-    const orderMatch = ORDER_ROUTE_RE.exec(path);
-    if (orderMatch) {
-      const orderId = orderMatch[1];
-      // Show the user's dashboard behind the modal
-      const dashPath = roleToPath(currentUser.role);
-      const dashRoute = ROUTES[dashPath];
-      $('#app-shell').classList.remove('hidden');
-      $('#nav-user-name').textContent = currentUser.name;
-      $('#nav-user-role').textContent = currentUser.role;
-      showView(dashRoute.viewId);
-      if (dashRoute.loader) dashRoute.loader();
-      connectWebSocket();
-      // Open order modal
-      viewOrder(orderId).catch(() => {
-        showToast('error', 'Invalid Order', `Order "${shortId(orderId)}" could not be found.`);
-        history.replaceState(null, '', dashPath);
-      });
-      return;
-    }
+	/** Pattern for dynamic order route: /orders/<uuid-or-id> */
+	const ORDER_ROUTE_RE = /^\/orders\/([a-zA-Z0-9_-]+)$/;
 
-    // ── 4. Unknown route → role dashboard ───────────────
-    if (!route) {
-      const target = roleToPath(currentUser.role);
-      history.replaceState(null, '', target);
-      handleRoute();
-      return;
-    }
+	function handleRoute() {
+		const path = location.pathname;
+		const route = ROUTES[path];
 
-    // ── 5. Role guard ───────────────────────────────────
-    if (route.requiredRole && route.requiredRole !== currentUser.role) {
-      showToast('warning', 'Access Denied',
-        `The ${path} dashboard requires the "${route.requiredRole}" role.`);
-      const target = roleToPath(currentUser.role);
-      history.replaceState(null, '', target);
-      handleRoute();
-      return;
-    }
+		// ── 1. Not authenticated ────────────────────────────
+		if (!currentUser) {
+			// Allow /login; everything else redirects to /login
+			if (route && route.requiredRole === null) {
+				$("#app-shell").classList.add("hidden");
+				showView(route.viewId);
+				return;
+			}
+			$("#app-shell").classList.add("hidden");
+			showView("view-login");
+			if (path !== "/login") {
+				history.replaceState(null, "", "/login");
+			}
+			return;
+		}
 
-    // ── 6. Activate view ────────────────────────────────
-    $('#app-shell').classList.remove('hidden');
-    $('#nav-user-name').textContent = currentUser.name;
-    $('#nav-user-role').textContent = currentUser.role;
+		// ── 2. Authenticated user on /login (or root /) ─────
+		if (path === "/login" || path === "/") {
+			const target = roleToPath(currentUser.role);
+			history.replaceState(null, "", target);
+			handleRoute();
+			return;
+		}
 
-    showView(route.viewId);
-    if (route.loader) route.loader();
+		// ── 3. Dynamic route: /orders/:id ───────────────────
+		const orderMatch = ORDER_ROUTE_RE.exec(path);
+		if (orderMatch) {
+			const orderId = orderMatch[1];
+			// Show the user's dashboard behind the modal
+			const dashPath = roleToPath(currentUser.role);
+			const dashRoute = ROUTES[dashPath];
+			$("#app-shell").classList.remove("hidden");
+			$("#nav-user-name").textContent = currentUser.name;
+			$("#nav-user-role").textContent = currentUser.role;
+			showView(dashRoute.viewId);
+			if (dashRoute.loader) dashRoute.loader();
+			connectWebSocket();
+			// Open order modal
+			viewOrder(orderId).catch(() => {
+				showToast(
+					"error",
+					"Invalid Order",
+					`Order "${shortId(orderId)}" could not be found.`,
+				);
+				history.replaceState(null, "", dashPath);
+			});
+			return;
+		}
 
-    // Connect WebSocket
-    connectWebSocket();
+		// ── 4. Unknown route → role dashboard ───────────────
+		if (!route) {
+			const target = roleToPath(currentUser.role);
+			history.replaceState(null, "", target);
+			handleRoute();
+			return;
+		}
 
-    // Start polling for updates
-    if (pollingInterval) clearInterval(pollingInterval);
-    pollingInterval = setInterval(() => {
-      if (currentUser.role === 'client') loadOrders();
-      else if (currentUser.role === 'driver') loadDriverOrders();
-      else loadAdminOrders();
-    }, 10000);
-  }
+		// ── 5. Role guard ───────────────────────────────────
+		if (route.requiredRole && route.requiredRole !== currentUser.role) {
+			showToast(
+				"warning",
+				"Access Denied",
+				`The ${path} dashboard requires the "${route.requiredRole}" role.`,
+			);
+			const target = roleToPath(currentUser.role);
+			history.replaceState(null, "", target);
+			handleRoute();
+			return;
+		}
 
-  // ── WebSocket ─────────────────────────────────────────
-  function connectWebSocket() {
-    if (ws) ws.close();
-    const wsUrl = `${WS_BASE}/ws/tracking/${currentUser.username}`;
+		// ── 6. Activate view ────────────────────────────────
+		$("#app-shell").classList.remove("hidden");
+		$("#nav-user-name").textContent = currentUser.name;
+		$("#nav-user-role").textContent = currentUser.role;
 
-    try {
-      ws = new WebSocket(wsUrl);
+		showView(route.viewId);
+		if (route.loader) route.loader();
 
-      ws.onopen = () => {
-        $('#ws-status').classList.remove('disconnected');
-        $('#ws-status').title = 'WebSocket connected';
-      };
+		// Connect WebSocket
+		connectWebSocket();
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          handleWsMessage(data);
-        } catch (e) { /* ignore non-JSON */ }
-      };
+		// Start polling for updates
+		if (pollingInterval) clearInterval(pollingInterval);
+		pollingInterval = setInterval(() => {
+			if (currentUser.role === "client") loadOrders();
+			else if (currentUser.role === "driver") loadDriverOrders();
+			else loadAdminOrders();
+		}, 10000);
+	}
 
-      ws.onclose = () => {
-        $('#ws-status').classList.add('disconnected');
-        $('#ws-status').title = 'WebSocket disconnected';
-        // Reconnect after 5s
-        setTimeout(() => {
-          if (currentUser) connectWebSocket();
-        }, 5000);
-      };
+	// ── WebSocket ─────────────────────────────────────────
+	function connectWebSocket() {
+		if (ws) ws.close();
+		const wsUrl = `${WS_BASE}/ws/tracking/${currentUser.username}`;
 
-      ws.onerror = () => {
-        ws.close();
-      };
-    } catch (e) {
-      console.warn('WebSocket connection failed:', e);
-    }
-  }
+		try {
+			ws = new WebSocket(wsUrl);
 
-  function handleWsMessage(data) {
-    if (data.type === 'order_update') {
-      showToast('info', 'Order Update', `Order ${shortId(data.order_id)} → ${formatStatus(data.status)}`);
-      // Refresh order list
-      if (currentUser.role === 'client') loadOrders();
-      else if (currentUser.role === 'driver') loadDriverOrders();
-      else loadAdminOrders();
-    }
-  }
+			ws.onopen = () => {
+				$("#ws-status").classList.remove("disconnected");
+				$("#ws-status").title = "WebSocket connected";
+			};
 
-  // ── Client Dashboard ──────────────────────────────────
-  async function loadClientDashboard() {
-    await loadOrders();
-  }
+			ws.onmessage = (event) => {
+				try {
+					const data = JSON.parse(event.data);
+					handleWsMessage(data);
+				} catch (e) {
+					/* ignore non-JSON */
+				}
+			};
 
-  async function loadOrders(statusFilter = '') {
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.set('status', statusFilter);
-      params.set('limit', '100');
+			ws.onclose = () => {
+				$("#ws-status").classList.add("disconnected");
+				$("#ws-status").title = "WebSocket disconnected";
+				// Reconnect after 5s
+				setTimeout(() => {
+					if (currentUser) connectWebSocket();
+				}, 5000);
+			};
 
-      const data = await api('GET', `/api/orders?${params}`);
-      orders = data.orders || [];
-      renderOrders(orders);
-      updateClientStats(orders);
-    } catch (e) {
-      console.error('Failed to load orders:', e);
-    }
-  }
+			ws.onerror = () => {
+				ws.close();
+			};
+		} catch (e) {
+			console.warn("WebSocket connection failed:", e);
+		}
+	}
 
-  function updateClientStats(orderList) {
-    const total = orderList.length;
-    const delivered = orderList.filter(o => o.status === 'DELIVERED').length;
-    const inTransit = orderList.filter(o => o.status === 'IN_TRANSIT').length;
-    const inProgress = orderList.filter(o =>
-      !['DELIVERED', 'FAILED', 'CANCELLED'].includes(o.status)
-    ).length;
+	function handleWsMessage(data) {
+		if (data.type === "order_update") {
+			showToast(
+				"info",
+				"Order Update",
+				`Order ${shortId(data.order_id)} → ${formatStatus(data.status)}`,
+			);
+			// Refresh order list
+			if (currentUser.role === "client") loadOrders();
+			else if (currentUser.role === "driver") loadDriverOrders();
+			else loadAdminOrders();
+		}
+	}
 
-    $('#stat-total').textContent = total;
-    $('#stat-delivered').textContent = delivered;
-    $('#stat-in-progress').textContent = inProgress;
-    $('#stat-in-transit').textContent = inTransit;
-  }
+	// ── Client Dashboard ──────────────────────────────────
+	async function loadClientDashboard() {
+		await loadOrders();
+	}
 
-  function renderOrders(orderList) {
-    const tbody = $('#orders-tbody');
-    const empty = $('#orders-empty');
+	async function loadOrders(statusFilter = "") {
+		try {
+			const params = new URLSearchParams();
+			if (statusFilter) params.set("status", statusFilter);
+			params.set("limit", "100");
 
-    if (!orderList.length) {
-      tbody.innerHTML = '';
-      empty.classList.remove('hidden');
-      return;
-    }
+			const data = await api("GET", `/api/orders?${params}`);
+			orders = data.orders || [];
+			renderOrders(orders);
+			updateClientStats(orders);
+		} catch (e) {
+			console.error("Failed to load orders:", e);
+		}
+	}
 
-    empty.classList.add('hidden');
-    tbody.innerHTML = orderList.map(order => `
+	function updateClientStats(orderList) {
+		const total = orderList.length;
+		const delivered = orderList.filter(
+			(o) => o.status === "DELIVERED",
+		).length;
+		const inTransit = orderList.filter(
+			(o) => o.status === "IN_TRANSIT",
+		).length;
+		const inProgress = orderList.filter(
+			(o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
+		).length;
+
+		$("#stat-total").textContent = total;
+		$("#stat-delivered").textContent = delivered;
+		$("#stat-in-progress").textContent = inProgress;
+		$("#stat-in-transit").textContent = inTransit;
+	}
+
+	function renderOrders(orderList) {
+		const tbody = $("#orders-tbody");
+		const empty = $("#orders-empty");
+
+		if (!orderList.length) {
+			tbody.innerHTML = "";
+			empty.classList.remove("hidden");
+			return;
+		}
+
+		empty.classList.add("hidden");
+		tbody.innerHTML = orderList
+			.map(
+				(order) => `
       <tr>
         <td><span class="order-id">${shortId(order.id)}</span></td>
         <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
@@ -312,81 +392,100 @@
           <a href="/orders/${order.id}" data-link class="btn btn-sm btn-secondary">View</a>
         </td>
       </tr>
-    `).join('');
-  }
+    `,
+			)
+			.join("");
+	}
 
-  async function createOrder(formData) {
-    const btn = $('#create-order-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Creating...';
+	async function createOrder(formData) {
+		const btn = $("#create-order-btn");
+		btn.disabled = true;
+		btn.innerHTML = '<span class="spinner"></span> Creating...';
 
-    try {
-      const order = await api('POST', '/api/orders', {
-        pickup_address: formData.pickup_address,
-        delivery_address: formData.delivery_address,
-        package_details: {
-          weight: parseFloat(formData.weight) || 1.0,
-          type: formData.type,
-          description: formData.description,
-        },
-      });
+		try {
+			const order = await api("POST", "/api/orders", {
+				pickup_address: formData.pickup_address,
+				delivery_address: formData.delivery_address,
+				package_details: {
+					weight: parseFloat(formData.weight) || 1.0,
+					type: formData.type,
+					description: formData.description,
+				},
+			});
 
-      showToast('success', 'Order Created', `Order ${shortId(order.id)} submitted!`);
-      $('#create-order-form').reset();
-      await loadOrders();
-    } catch (e) {
-      showToast('error', 'Creation Failed', e.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="ph ph-rocket-launch"></i> Create Order';
-    }
-  }
+			showToast(
+				"success",
+				"Order Created",
+				`Order ${shortId(order.id)} submitted!`,
+			);
+			$("#create-order-form").reset();
+			await loadOrders();
+		} catch (e) {
+			showToast("error", "Creation Failed", e.message);
+		} finally {
+			btn.disabled = false;
+			btn.innerHTML = '<i class="ph ph-rocket-launch"></i> Create Order';
+		}
+	}
 
-  // ── Driver Dashboard ──────────────────────────────────
-  async function loadDriverDashboard() {
-    await loadDriverOrders();
-  }
+	// ── Driver Dashboard ──────────────────────────────────
+	async function loadDriverDashboard() {
+		await loadDriverOrders();
+	}
 
-  async function loadDriverOrders() {
-    try {
-      const data = await api('GET', '/api/orders?limit=100');
-      const allOrders = data.orders || [];
-      // Show orders that are READY or IN_TRANSIT (assigned to drivers)
-      const driverOrders = allOrders.filter(o =>
-        ['READY', 'IN_TRANSIT', 'ROUTE_OPTIMIZED', 'DELIVERED', 'FAILED'].includes(o.status)
-      );
+	async function loadDriverOrders() {
+		try {
+			const data = await api("GET", "/api/orders?limit=100");
+			const allOrders = data.orders || [];
+			// Show orders that are READY or IN_TRANSIT (assigned to drivers)
+			const driverOrders = allOrders.filter((o) =>
+				[
+					"READY",
+					"IN_TRANSIT",
+					"ROUTE_OPTIMIZED",
+					"DELIVERED",
+					"FAILED",
+				].includes(o.status),
+			);
 
-      renderDriverOrders(driverOrders);
-      updateDriverStats(driverOrders);
-    } catch (e) {
-      console.error('Failed to load driver orders:', e);
-    }
-  }
+			renderDriverOrders(driverOrders);
+			updateDriverStats(driverOrders);
+		} catch (e) {
+			console.error("Failed to load driver orders:", e);
+		}
+	}
 
-  function updateDriverStats(orderList) {
-    const assigned = orderList.filter(o => ['READY', 'ROUTE_OPTIMIZED'].includes(o.status)).length;
-    const inTransit = orderList.filter(o => o.status === 'IN_TRANSIT').length;
-    const delivered = orderList.filter(o => o.status === 'DELIVERED').length;
+	function updateDriverStats(orderList) {
+		const assigned = orderList.filter((o) =>
+			["READY", "ROUTE_OPTIMIZED"].includes(o.status),
+		).length;
+		const inTransit = orderList.filter(
+			(o) => o.status === "IN_TRANSIT",
+		).length;
+		const delivered = orderList.filter(
+			(o) => o.status === "DELIVERED",
+		).length;
 
-    $('#driver-stat-assigned').textContent = assigned;
-    $('#driver-stat-transit').textContent = inTransit;
-    $('#driver-stat-delivered').textContent = delivered;
-  }
+		$("#driver-stat-assigned").textContent = assigned;
+		$("#driver-stat-transit").textContent = inTransit;
+		$("#driver-stat-delivered").textContent = delivered;
+	}
 
-  function renderDriverOrders(orderList) {
-    const tbody = $('#driver-orders-tbody');
-    const empty = $('#driver-orders-empty');
+	function renderDriverOrders(orderList) {
+		const tbody = $("#driver-orders-tbody");
+		const empty = $("#driver-orders-empty");
 
-    if (!orderList.length) {
-      tbody.innerHTML = '';
-      empty.classList.remove('hidden');
-      return;
-    }
+		if (!orderList.length) {
+			tbody.innerHTML = "";
+			empty.classList.remove("hidden");
+			return;
+		}
 
-    empty.classList.add('hidden');
-    tbody.innerHTML = orderList.map(order => {
-      const actions = getDriverActions(order);
-      return `
+		empty.classList.add("hidden");
+		tbody.innerHTML = orderList
+			.map((order) => {
+				const actions = getDriverActions(order);
+				return `
         <tr>
           <td><span class="order-id">${shortId(order.id)}</span></td>
           <td><span class="status-badge status-${order.status}">${formatStatus(order.status)}</span></td>
@@ -395,78 +494,89 @@
           <td class="cell-actions">${actions}</td>
         </tr>
       `;
-    }).join('');
-  }
+			})
+			.join("");
+	}
 
-  function getDriverActions(order) {
-    if (order.status === 'READY' || order.status === 'ROUTE_OPTIMIZED') {
-      return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="IN_TRANSIT"><i class="ph ph-truck"></i> Start</button>`;
-    }
-    if (order.status === 'IN_TRANSIT') {
-      return `
+	function getDriverActions(order) {
+		if (order.status === "READY" || order.status === "ROUTE_OPTIMIZED") {
+			return `<button class="btn btn-sm btn-primary" data-action="driver-status" data-order-id="${order.id}" data-status="IN_TRANSIT"><i class="ph ph-truck"></i> Start</button>`;
+		}
+		if (order.status === "IN_TRANSIT") {
+			return `
         <button class="btn btn-sm btn-success" data-action="driver-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
         <button class="btn btn-sm btn-danger" data-action="driver-status" data-order-id="${order.id}" data-status="FAILED"><i class="ph ph-x-circle"></i> Fail</button>
       `;
-    }
-    return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
-  }
+		}
+		return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
+	}
 
-  async function driverAction(orderId, newStatus) {
-    try {
-      await api('PATCH', `/api/orders/${orderId}/status`, { status: newStatus });
-      showToast('success', 'Status Updated', `Order → ${formatStatus(newStatus)}`);
-      await loadDriverOrders();
-    } catch (e) {
-      showToast('error', 'Update Failed', e.message);
-    }
-  }
+	async function driverAction(orderId, newStatus) {
+		try {
+			await api("PATCH", `/api/orders/${orderId}/status`, {
+				status: newStatus,
+			});
+			showToast(
+				"success",
+				"Status Updated",
+				`Order → ${formatStatus(newStatus)}`,
+			);
+			await loadDriverOrders();
+		} catch (e) {
+			showToast("error", "Update Failed", e.message);
+		}
+	}
 
-  // ── Admin Dashboard ───────────────────────────────────
-  async function loadAdminDashboard() {
-    await loadAdminOrders();
-  }
+	// ── Admin Dashboard ───────────────────────────────────
+	async function loadAdminDashboard() {
+		await loadAdminOrders();
+	}
 
-  async function loadAdminOrders(statusFilter = '') {
-    try {
-      const params = new URLSearchParams();
-      if (statusFilter) params.set('status', statusFilter);
-      params.set('limit', '200');
+	async function loadAdminOrders(statusFilter = "") {
+		try {
+			const params = new URLSearchParams();
+			if (statusFilter) params.set("status", statusFilter);
+			params.set("limit", "200");
 
-      const data = await api('GET', `/api/orders?${params}`);
-      const allOrders = data.orders || [];
-      renderAdminOrders(allOrders);
-      updateAdminStats(allOrders);
-    } catch (e) {
-      console.error('Failed to load admin orders:', e);
-    }
-  }
+			const data = await api("GET", `/api/orders?${params}`);
+			const allOrders = data.orders || [];
+			renderAdminOrders(allOrders);
+			updateAdminStats(allOrders);
+		} catch (e) {
+			console.error("Failed to load admin orders:", e);
+		}
+	}
 
-  function updateAdminStats(orderList) {
-    const total = orderList.length;
-    const delivered = orderList.filter(o => o.status === 'DELIVERED').length;
-    const processing = orderList.filter(o =>
-      !['DELIVERED', 'FAILED', 'CANCELLED'].includes(o.status)
-    ).length;
-    const failed = orderList.filter(o => o.status === 'FAILED').length;
+	function updateAdminStats(orderList) {
+		const total = orderList.length;
+		const delivered = orderList.filter(
+			(o) => o.status === "DELIVERED",
+		).length;
+		const processing = orderList.filter(
+			(o) => !["DELIVERED", "FAILED", "CANCELLED"].includes(o.status),
+		).length;
+		const failed = orderList.filter((o) => o.status === "FAILED").length;
 
-    $('#admin-stat-total').textContent = total;
-    $('#admin-stat-delivered').textContent = delivered;
-    $('#admin-stat-processing').textContent = processing;
-    $('#admin-stat-failed').textContent = failed;
-  }
+		$("#admin-stat-total").textContent = total;
+		$("#admin-stat-delivered").textContent = delivered;
+		$("#admin-stat-processing").textContent = processing;
+		$("#admin-stat-failed").textContent = failed;
+	}
 
-  function renderAdminOrders(orderList) {
-    const tbody = $('#admin-orders-tbody');
-    const empty = $('#admin-orders-empty');
+	function renderAdminOrders(orderList) {
+		const tbody = $("#admin-orders-tbody");
+		const empty = $("#admin-orders-empty");
 
-    if (!orderList.length) {
-      tbody.innerHTML = '';
-      empty.classList.remove('hidden');
-      return;
-    }
+		if (!orderList.length) {
+			tbody.innerHTML = "";
+			empty.classList.remove("hidden");
+			return;
+		}
 
-    empty.classList.add('hidden');
-    tbody.innerHTML = orderList.map(order => `
+		empty.classList.add("hidden");
+		tbody.innerHTML = orderList
+			.map(
+				(order) => `
       <tr>
         <td><span class="order-id">${shortId(order.id)}</span></td>
         <td class="text-sm">${order.client_id}</td>
@@ -478,23 +588,25 @@
           <a href="/orders/${order.id}" data-link class="btn btn-sm btn-secondary">View</a>
         </td>
       </tr>
-    `).join('');
-  }
+    `,
+			)
+			.join("");
+	}
 
-  // ── Order Detail Modal ────────────────────────────────
-  async function viewOrder(orderId) {
-    try {
-      const order = await api('GET', `/api/orders/${orderId}`);
-      renderOrderModal(order);
-      $('#order-modal').classList.add('active');
-    } catch (e) {
-      showToast('error', 'Error', 'Could not load order details');
-    }
-  }
+	// ── Order Detail Modal ────────────────────────────────
+	async function viewOrder(orderId) {
+		try {
+			const order = await api("GET", `/api/orders/${orderId}`);
+			renderOrderModal(order);
+			$("#order-modal").classList.add("active");
+		} catch (e) {
+			showToast("error", "Error", "Could not load order details");
+		}
+	}
 
-  function renderOrderModal(order) {
-    const details = $('#modal-details');
-    details.innerHTML = `
+	function renderOrderModal(order) {
+		const details = $("#modal-details");
+		details.innerHTML = `
       <div class="detail-item">
         <label>Order ID</label>
         <span class="order-id">${order.id}</span>
@@ -519,228 +631,263 @@
         <label>Delivery</label>
         <span>${order.delivery_address}</span>
       </div>
-      ${order.cms_reference ? `
+      ${
+			order.cms_reference
+				? `
         <div class="detail-item">
           <label>CMS Ref</label>
           <span>${order.cms_reference}</span>
         </div>
-      ` : ''}
-      ${order.wms_reference ? `
+      `
+				: ""
+		}
+      ${
+			order.wms_reference
+				? `
         <div class="detail-item">
           <label>WMS Ref</label>
           <span>${order.wms_reference}</span>
         </div>
-      ` : ''}
-      ${order.route_id ? `
+      `
+				: ""
+		}
+      ${
+			order.route_id
+				? `
         <div class="detail-item">
           <label>Route ID</label>
           <span>${order.route_id}</span>
         </div>
-      ` : ''}
-      ${order.driver_id ? `
+      `
+				: ""
+		}
+      ${
+			order.driver_id
+				? `
         <div class="detail-item">
           <label>Driver</label>
           <span>${order.driver_id}</span>
         </div>
-      ` : ''}
+      `
+				: ""
+		}
     `;
 
-    // Timeline
-    const timeline = $('#modal-timeline');
-    const history = order.status_history || [];
+		// Timeline
+		const timeline = $("#modal-timeline");
+		const history = order.status_history || [];
 
-    if (history.length) {
-      timeline.innerHTML = history.map(h => `
+		if (history.length) {
+			timeline.innerHTML = history
+				.map(
+					(h) => `
         <div class="timeline-item">
           <div class="timeline-status">
             <span class="status-badge status-${h.new_status}">${formatStatus(h.new_status)}</span>
           </div>
-          <div class="timeline-details">${h.details || ''}</div>
+          <div class="timeline-details">${h.details || ""}</div>
           <div class="timeline-time">${formatDateTime(h.created_at)}</div>
         </div>
-      `).join('');
-    } else {
-      timeline.innerHTML = '<p class="text-muted text-sm">No status history available.</p>';
-    }
-  }
+      `,
+				)
+				.join("");
+		} else {
+			timeline.innerHTML =
+				'<p class="text-muted text-sm">No status history available.</p>';
+		}
+	}
 
-  function closeModal() {
-    $('#order-modal').classList.remove('active');
-    // If URL is still on a deep-link order route, go back to dashboard
-    if (ORDER_ROUTE_RE.test(location.pathname) && currentUser) {
-      history.replaceState(null, '', roleToPath(currentUser.role));
-    }
-  }
+	function closeModal() {
+		$("#order-modal").classList.remove("active");
+		// If URL is still on a deep-link order route, go back to dashboard
+		if (ORDER_ROUTE_RE.test(location.pathname) && currentUser) {
+			history.replaceState(null, "", roleToPath(currentUser.role));
+		}
+	}
 
-  // ── Toast Notifications ───────────────────────────────
-  function showToast(type, title, message) {
-    const container = $('#toast-container');
-    const icons = { success: '<i class="ph ph-check-circle"></i>', info: 'ℹ️', warning: '<i class="ph ph-warning"></i>', error: '<i class="ph ph-x-circle"></i>' };
+	// ── Toast Notifications ───────────────────────────────
+	function showToast(type, title, message) {
+		const container = $("#toast-container");
+		const icons = {
+			success: '<i class="ph ph-check-circle"></i>',
+			info: "ℹ️",
+			warning: '<i class="ph ph-warning"></i>',
+			error: '<i class="ph ph-x-circle"></i>',
+		};
 
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-      <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+		const toast = document.createElement("div");
+		toast.className = `toast ${type}`;
+		toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || "ℹ️"}</span>
       <div class="toast-body">
         <div class="toast-title">${title}</div>
         <div class="toast-message">${message}</div>
       </div>
     `;
 
-    container.appendChild(toast);
+		container.appendChild(toast);
 
-    setTimeout(() => {
-      toast.classList.add('removing');
-      setTimeout(() => toast.remove(), 300);
-    }, 4000);
-  }
+		setTimeout(() => {
+			toast.classList.add("removing");
+			setTimeout(() => toast.remove(), 300);
+		}, 4000);
+	}
 
-  // ── Utilities ─────────────────────────────────────────
-  function shortId(id) {
-    return id ? id.substring(0, 8) + '...' : '';
-  }
+	// ── Utilities ─────────────────────────────────────────
+	function shortId(id) {
+		return id ? id.substring(0, 8) + "..." : "";
+	}
 
-  function truncate(str, len) {
-    if (!str) return '';
-    return str.length > len ? str.substring(0, len) + '...' : str;
-  }
+	function truncate(str, len) {
+		if (!str) return "";
+		return str.length > len ? str.substring(0, len) + "..." : str;
+	}
 
-  function formatStatus(status) {
-    if (!status) return '';
-    return status.replace(/_/g, ' ');
-  }
+	function formatStatus(status) {
+		if (!status) return "";
+		return status.replace(/_/g, " ");
+	}
 
-  function formatTime(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+	function formatTime(dateStr) {
+		if (!dateStr) return "";
+		const d = new Date(dateStr);
+		return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	}
 
-  function formatDateTime(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleString([], {
-      month: 'short', day: 'numeric',
-      hour: '2-digit', minute: '2-digit', second: '2-digit',
-    });
-  }
+	function formatDateTime(dateStr) {
+		if (!dateStr) return "";
+		const d = new Date(dateStr);
+		return d.toLocaleString([], {
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+			second: "2-digit",
+		});
+	}
 
-  // ── Event Handlers ────────────────────────────────────
-  function init() {
-    // Login form
-    $('#login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const errEl = $('#login-error');
-      errEl.classList.remove('visible');
+	// ── Event Handlers ────────────────────────────────────
+	function init() {
+		applyTheme(getPreferredTheme(), false);
+		bindThemeToggle();
 
-      const username = $('#login-username').value.trim();
-      const password = $('#login-password').value;
+		// Login form
+		$("#login-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			const errEl = $("#login-error");
+			errEl.classList.remove("visible");
 
-      if (!username || !password) return;
+			const username = $("#login-username").value.trim();
+			const password = $("#login-password").value;
 
-      const btn = $('#login-btn');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span> Signing in...';
+			if (!username || !password) return;
 
-      try {
-        await login(username, password);
-        navigateTo('/' + currentUser.role);
-      } catch (e) {
-        errEl.textContent = e.message;
-        errEl.classList.add('visible');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Sign In';
-      }
-    });
+			const btn = $("#login-btn");
+			btn.disabled = true;
+			btn.innerHTML = '<span class="spinner"></span> Signing in...';
 
-    // Demo account chips
-    $$('.demo-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        $('#login-username').value = chip.dataset.user;
-        $('#login-password').value = chip.dataset.pass;
-      });
-    });
+			try {
+				await login(username, password);
+				navigateTo("/" + currentUser.role);
+			} catch (e) {
+				errEl.textContent = e.message;
+				errEl.classList.add("visible");
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = "Sign In";
+			}
+		});
 
-    // Logout
-    $('#logout-btn').addEventListener('click', () => {
-      clearSession();
-      navigateTo('/login');
-    });
+		// Demo account chips
+		$$(".demo-chip").forEach((chip) => {
+			chip.addEventListener("click", () => {
+				$("#login-username").value = chip.dataset.user;
+				$("#login-password").value = chip.dataset.pass;
+			});
+		});
 
-    // Create order form
-    $('#create-order-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await createOrder({
-        pickup_address: $('#pickup-address').value,
-        delivery_address: $('#delivery-address').value,
-        weight: $('#pkg-weight').value,
-        type: $('#pkg-type').value,
-        description: $('#pkg-description').value,
-      });
-    });
+		// Logout
+		$("#logout-btn").addEventListener("click", () => {
+			clearSession();
+			navigateTo("/login");
+		});
 
-    // Filter (client)
-    $('#filter-status').addEventListener('change', (e) => {
-      loadOrders(e.target.value);
-    });
+		// Create order form
+		$("#create-order-form").addEventListener("submit", async (e) => {
+			e.preventDefault();
+			await createOrder({
+				pickup_address: $("#pickup-address").value,
+				delivery_address: $("#delivery-address").value,
+				weight: $("#pkg-weight").value,
+				type: $("#pkg-type").value,
+				description: $("#pkg-description").value,
+			});
+		});
 
-    // Filter (admin)
-    $('#admin-filter-status').addEventListener('change', (e) => {
-      loadAdminOrders(e.target.value);
-    });
+		// Filter (client)
+		$("#filter-status").addEventListener("change", (e) => {
+			loadOrders(e.target.value);
+		});
 
-    // Refresh buttons
-    $('#refresh-orders-btn').addEventListener('click', () => loadOrders());
-    $('#refresh-driver-btn').addEventListener('click', () => loadDriverOrders());
-    $('#refresh-admin-btn').addEventListener('click', () => loadAdminOrders());
+		// Filter (admin)
+		$("#admin-filter-status").addEventListener("change", (e) => {
+			loadAdminOrders(e.target.value);
+		});
 
-    // Modal close
-    $('#modal-close').addEventListener('click', closeModal);
-    $('#order-modal').addEventListener('click', (e) => {
-      if (e.target === $('#order-modal')) closeModal();
-    });
+		// Refresh buttons
+		$("#refresh-orders-btn").addEventListener("click", () => loadOrders());
+		$("#refresh-driver-btn").addEventListener("click", () =>
+			loadDriverOrders(),
+		);
+		$("#refresh-admin-btn").addEventListener("click", () =>
+			loadAdminOrders(),
+		);
 
-    // Keyboard
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
+		// Modal close
+		$("#modal-close").addEventListener("click", closeModal);
+		$("#order-modal").addEventListener("click", (e) => {
+			if (e.target === $("#order-modal")) closeModal();
+		});
 
-    // ── Delegated click handler (replaces inline onclick) ──
-    document.addEventListener('click', (e) => {
-      // [data-link] — client-side navigation (e.g. <a href="/orders/..." data-link>)
-      const link = e.target.closest('[data-link]');
-      if (link) {
-        e.preventDefault();
-        navigateTo(link.getAttribute('href'));
-        return;
-      }
+		// Keyboard
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "Escape") closeModal();
+		});
 
-      // [data-action="driver-status"] — driver order actions
-      const actionEl = e.target.closest('[data-action="driver-status"]');
-      if (actionEl) {
-        const orderId = actionEl.dataset.orderId;
-        const status = actionEl.dataset.status;
-        if (orderId && status) driverAction(orderId, status);
-        return;
-      }
-    });
+		// ── Delegated click handler (replaces inline onclick) ──
+		document.addEventListener("click", (e) => {
+			// [data-link] — client-side navigation (e.g. <a href="/orders/..." data-link>)
+			const link = e.target.closest("[data-link]");
+			if (link) {
+				e.preventDefault();
+				navigateTo(link.getAttribute("href"));
+				return;
+			}
 
-    // Listen for browser back / forward
-    window.addEventListener('popstate', handleRoute);
+			// [data-action="driver-status"] — driver order actions
+			const actionEl = e.target.closest('[data-action="driver-status"]');
+			if (actionEl) {
+				const orderId = actionEl.dataset.orderId;
+				const status = actionEl.dataset.status;
+				if (orderId && status) driverAction(orderId, status);
+				return;
+			}
+		});
 
-    // Check existing session and resolve current URL
-    loadSession();
-    handleRoute();
-  }
+		// Listen for browser back / forward
+		window.addEventListener("popstate", handleRoute);
 
-  // No more window.SwiftTrack needed — all actions use event delegation.
+		// Check existing session and resolve current URL
+		loadSession();
+		handleRoute();
+	}
 
-  // ── Boot ──────────────────────────────────────────────
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+	// No more window.SwiftTrack needed — all actions use event delegation.
 
+	// ── Boot ──────────────────────────────────────────────
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", init);
+	} else {
+		init();
+	}
 })();

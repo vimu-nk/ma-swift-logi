@@ -1,68 +1,135 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="SwiftTrack — Sign in to your logistics dashboard">
-  <title>SwiftTrack — Login</title>
-  <link rel="stylesheet" href="/static/styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
-</head>
-<body>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta
+			name="description"
+			content="SwiftTrack — Sign in to your logistics dashboard"
+		/>
+		<title>SwiftTrack — Login</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+		/>
+		<link
+			rel="icon"
+			type="image/svg+xml"
+			href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E"
+		/>
+	</head>
+	<body>
+		<button
+			class="theme-toggle theme-toggle-floating"
+			id="theme-toggle"
+			title="Toggle theme"
+			aria-label="Toggle dark mode"
+		>
+			<i class="fa-solid fa-moon"></i>
+		</button>
 
-<!-- ═══════════ Login View ═══════════ -->
-<div class="login-container view active">
-  <div class="card login-card">
-    <div class="logo-big"><i class="fa-solid fa-truck-fast"></i></div>
-    <h1>SwiftTrack</h1>
-    <p class="subtitle">Logistics Management Platform</p>
+		<!-- ═══════════ Login View ═══════════ -->
+		<div class="login-container view active">
+			<div class="card login-card">
+				<div class="logo-big">
+					<i class="fa-solid fa-truck-fast"></i>
+				</div>
+				<h1>SwiftTrack</h1>
+				<p class="subtitle">Logistics Management Platform</p>
 
-    <form id="login-form" autocomplete="off">
-      <div class="form-group">
-        <label class="form-label" for="login-username">Username</label>
-        <input class="form-input" id="login-username" type="text" placeholder="Enter username" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="login-password">Password</label>
-        <div class="input-group">
-          <input class="form-input" id="login-password" type="password" placeholder="Enter password" required>
-          <button type="button" class="btn-toggle-pw" id="toggle-password" title="Show password"><i class="fa-solid fa-eye"></i></button>
-        </div>
-      </div>
-      <div id="login-error" class="login-error"></div>
-      <button type="submit" class="btn btn-primary" id="login-btn">
-        Sign In
-      </button>
-    </form>
+				<form id="login-form" autocomplete="off">
+					<div class="form-group">
+						<label class="form-label" for="login-username"
+							>Username</label
+						>
+						<input
+							class="form-input"
+							id="login-username"
+							type="text"
+							placeholder="Enter username"
+							required
+						/>
+					</div>
+					<div class="form-group">
+						<label class="form-label" for="login-password"
+							>Password</label
+						>
+						<div class="input-group">
+							<input
+								class="form-input"
+								id="login-password"
+								type="password"
+								placeholder="Enter password"
+								required
+							/>
+							<button
+								type="button"
+								class="btn-toggle-pw"
+								id="toggle-password"
+								title="Show password"
+							>
+								<i class="fa-solid fa-eye"></i>
+							</button>
+						</div>
+					</div>
+					<div id="login-error" class="login-error"></div>
+					<button
+						type="submit"
+						class="btn btn-primary"
+						id="login-btn"
+					>
+						Sign In
+					</button>
+				</form>
 
-    <div class="demo-accounts">
-      <h4>Demo Accounts</h4>
-      <div class="demo-chips">
-        <span class="demo-chip" data-user="client1" data-pass="password123">
-          client1 <span class="chip-role">client</span>
-        </span>
-        <span class="demo-chip" data-user="client2" data-pass="password123">
-          client2 <span class="chip-role">client</span>
-        </span>
-        <span class="demo-chip" data-user="driver1" data-pass="password123">
-          driver1 <span class="chip-role">driver</span>
-        </span>
-        <span class="demo-chip" data-user="driver2" data-pass="password123">
-          driver2 <span class="chip-role">driver</span>
-        </span>
-        <span class="demo-chip" data-user="admin" data-pass="admin123">
-          admin <span class="chip-role">admin</span>
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+				<div class="demo-accounts">
+					<h4>Demo Accounts</h4>
+					<div class="demo-chips">
+						<span
+							class="demo-chip"
+							data-user="client1"
+							data-pass="password123"
+						>
+							client1 <span class="chip-role">client</span>
+						</span>
+						<span
+							class="demo-chip"
+							data-user="client2"
+							data-pass="password123"
+						>
+							client2 <span class="chip-role">client</span>
+						</span>
+						<span
+							class="demo-chip"
+							data-user="driver1"
+							data-pass="password123"
+						>
+							driver1 <span class="chip-role">driver</span>
+						</span>
+						<span
+							class="demo-chip"
+							data-user="driver2"
+							data-pass="password123"
+						>
+							driver2 <span class="chip-role">driver</span>
+						</span>
+						<span
+							class="demo-chip"
+							data-user="admin"
+							data-pass="admin123"
+						>
+							admin <span class="chip-role">admin</span>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toast-container"></div>
+		<!-- Toast Container -->
+		<div class="toast-container" id="toast-container"></div>
 
-<script src="/static/shared.js"></script>
-<script src="/static/login.js"></script>
-</body>
+		<script src="/static/shared.js"></script>
+		<script src="/static/login.js"></script>
+	</body>
 </html>
