@@ -6,10 +6,8 @@
 		<meta name="description" content="SwiftTrack — Admin Console" />
 		<title>SwiftTrack — Admin Console</title>
 		<link rel="stylesheet" href="/static/styles.css" />
-		<link
-			rel="icon"
-			href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"
-		/>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+		<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
 	</head>
 	<body>
 		<!-- ═══════════ App Shell (Nav) ═══════════ -->
@@ -17,8 +15,8 @@
 			<!-- Navigation -->
 			<nav class="navbar">
 				<a class="navbar-brand" href="/admin">
-					<div class="logo">⚡</div>
-					<span class="text-gradient">SwiftTrack</span>
+					<div class="logo"><i class="fa-solid fa-truck-fast"></i></div>
+					<span>SwiftTrack</span>
 				</a>
 				<div class="navbar-right">
 					<div
@@ -40,13 +38,13 @@
 			<main class="page-content">
 				<!-- ═══ Admin Dashboard ═══ -->
 				<div class="dashboard-header">
-					<h1>🛡️ Admin Console</h1>
+					<h1><i class="fa-solid fa-shield-halved"></i> Admin Console</h1>
 					<div class="dashboard-actions">
 						<button
 							class="btn btn-sm btn-secondary"
 							id="refresh-admin-btn"
 						>
-							🔄 Refresh
+							<i class="fa-solid fa-arrows-rotate"></i> Refresh
 						</button>
 					</div>
 				</div>
@@ -60,36 +58,36 @@
 
 				<div class="stats-grid" id="admin-stats">
 					<div class="stat-card cyan">
-						<div class="stat-icon">📋</div>
+						<div class="stat-icon"><i class="fa-solid fa-clipboard-list"></i></div>
 						<div class="stat-value" id="admin-stat-total">0</div>
 						<div class="stat-label">Total Orders</div>
 					</div>
 					<div class="stat-card green">
-						<div class="stat-icon">✅</div>
+						<div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
 						<div class="stat-value" id="admin-stat-delivered">
 							0
 						</div>
 						<div class="stat-label">Delivered</div>
 					</div>
 					<div class="stat-card purple">
-						<div class="stat-icon">🔄</div>
+						<div class="stat-icon"><i class="fa-solid fa-spinner"></i></div>
 						<div class="stat-value" id="admin-stat-processing">
 							0
 						</div>
 						<div class="stat-label">Processing</div>
 					</div>
 					<div class="stat-card amber">
-						<div class="stat-icon">⚠️</div>
+						<div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
 						<div class="stat-value" id="admin-stat-failed">0</div>
 						<div class="stat-label">Failed</div>
 					</div>
 					<div class="stat-card purple">
-						<div class="stat-icon">🚚</div>
+						<div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
 						<div class="stat-value" id="admin-stat-drivers">0</div>
 						<div class="stat-label">Drivers</div>
 					</div>
 					<div class="stat-card cyan">
-						<div class="stat-icon">📦</div>
+						<div class="stat-icon"><i class="fa-solid fa-box"></i></div>
 						<div class="stat-value" id="admin-stat-pickup">
 							0
 						</div>
@@ -100,7 +98,7 @@
 				<div class="card tab-panel" id="panel-orders">
 					<div class="card-header">
 						<h3 class="card-title">
-							<span class="icon">📊</span> All Orders
+							<span class="icon"><i class="fa-solid fa-chart-simple"></i></span> All Orders
 						</h3>
 						<select
 							class="form-select"
@@ -146,7 +144,7 @@
 						</table>
 					</div>
 					<div class="empty-state hidden" id="admin-orders-empty">
-						<div class="empty-icon">📭</div>
+						<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
 						<p>No orders in the system yet.</p>
 					</div>
 				</div>
@@ -155,7 +153,7 @@
 					<div class="card mb-md">
 						<div class="card-header">
 							<h3 class="card-title">
-								<span class="icon">➕</span> Create Driver
+								<span class="icon"><i class="fa-solid fa-plus"></i></span> Create Driver
 							</h3>
 						</div>
 						<form id="create-driver-form" class="form-row">
@@ -207,7 +205,7 @@
 					<div class="card">
 						<div class="card-header">
 							<h3 class="card-title">
-								<span class="icon">🚚</span> Drivers
+								<span class="icon"><i class="fa-solid fa-truck"></i></span> Drivers
 							</h3>
 						</div>
 						<div class="table-wrapper">
@@ -223,7 +221,7 @@
 							</table>
 						</div>
 						<div class="empty-state hidden" id="drivers-empty">
-							<div class="empty-icon">🚚</div>
+							<div class="empty-icon"><i class="fa-solid fa-truck"></i></div>
 							<p>No drivers found.</p>
 						</div>
 					</div>
@@ -235,7 +233,7 @@
 		<div class="modal-overlay" id="order-modal">
 			<div class="modal">
 				<div class="modal-header">
-					<h2>📦 Order Details</h2>
+					<h2><i class="fa-solid fa-box"></i> Order Details</h2>
 					<button class="modal-close" id="modal-close">
 						&times;
 					</button>

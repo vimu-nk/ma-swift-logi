@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SwiftTrack - Enterprise Logistics Coordination Platform for professional order management and delivery tracking">
+  <title>SwiftTrack - Enterprise Logistics Platform</title>
+  <link rel="stylesheet" href="/static/landing.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-logo">
+          <i class="fa-solid fa-truck-fast"></i>
+        </div>
+        <span class="brand-name">SwiftTrack</span>
+      </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#system-overview" class="nav-link">System Overview</a>
+        <a href="#architecture" class="nav-link">Architecture</a>
+        <a href="#contact" class="nav-link">Contact</a>
+        <a href="/static/index.html" class="nav-link nav-btn">Login</a>
+      </div>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="hero-container">
+      <div class="hero-content">
+        <h1 class="hero-title">Enterprise Logistics Coordination Platform</h1>
+        <p class="hero-description">Centralized system for order management, warehouse integration, delivery tracking, and service orchestration. Built for modern logistics operations.</p>
+        <div class="hero-buttons">
+          <a href="/static/index.html" class="btn btn-primary">
+            <i class="fa-solid fa-right-to-bracket"></i>
+            Access System
+          </a>
+          <a href="#architecture" class="btn btn-secondary">
+            <i class="fa-solid fa-diagram-project"></i>
+            View Architecture
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="hero-illustration">
+          <i class="fa-solid fa-warehouse"></i>
+          <i class="fa-solid fa-truck"></i>
+          <i class="fa-solid fa-box"></i>
+          <i class="fa-solid fa-route"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Modules Section -->
+  <section class="modules" id="system-overview">
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">Core System Modules</h2>
+        <p class="section-subtitle">Comprehensive microservices architecture for end-to-end logistics management</p>
+      </div>
+      <div class="modules-grid">
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-clipboard-list"></i>
+          </div>
+          <h3 class="module-title">Order Management Service</h3>
+          <p class="module-description">Complete order lifecycle management with real-time status tracking and event-driven updates.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-warehouse"></i>
+          </div>
+          <h3 class="module-title">Warehouse Management Integration</h3>
+          <p class="module-description">Seamless integration with warehouse systems for inventory coordination and fulfillment.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          <h3 class="module-title">Delivery Tracking Service</h3>
+          <p class="module-description">Real-time delivery tracking with route optimization and driver assignment capabilities.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 class="module-title">Authentication Service</h3>
+          <p class="module-description">Secure JWT-based authentication with role-based access control for all user types.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-network-wired"></i>
+          </div>
+          <h3 class="module-title">API Gateway</h3>
+          <p class="module-description">Centralized routing and load balancing for all microservices with comprehensive monitoring.</p>
+        </div>
+
+        <div class="module-card">
+          <div class="module-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <h3 class="module-title">Admin Panel</h3>
+          <p class="module-description">Comprehensive administrative dashboard for system monitoring and operational management.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- System Workflow Section -->
+  <section class="workflow" id="architecture">
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">System Architecture</h2>
+        <p class="section-subtitle">Modern microservices-based workflow for scalable logistics operations</p>
+      </div>
+      <div class="workflow-diagram">
+        <div class="workflow-step">
+          <div class="workflow-icon">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <p class="workflow-label">Client</p>
+        </div>
+        <div class="workflow-arrow">
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-icon">
+            <i class="fa-solid fa-network-wired"></i>
+          </div>
+          <p class="workflow-label">API Gateway</p>
+        </div>
+        <div class="workflow-arrow">
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-icon">
+            <i class="fa-solid fa-server"></i>
+          </div>
+          <p class="workflow-label">Microservices</p>
+        </div>
+        <div class="workflow-arrow">
+          <i class="fa-solid fa-arrow-right"></i>
+        </div>
+        <div class="workflow-step">
+          <div class="workflow-icon">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <p class="workflow-label">Database</p>
+        </div>
+      </div>
+      <div class="architecture-details">
+        <div class="architecture-item">
+          <div class="architecture-icon">
+            <i class="fa-solid fa-code"></i>
+          </div>
+          <div class="architecture-text">
+            <h4>Tech Stack</h4>
+            <p>Python · FastAPI · PostgreSQL · RabbitMQ · Docker</p>
+          </div>
+        </div>
+        <div class="architecture-item">
+          <div class="architecture-icon">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <div class="architecture-text">
+            <h4>Microservices</h4>
+            <p>Event-driven architecture with independent, scalable services</p>
+          </div>
+        </div>
+        <div class="architecture-item">
+          <div class="architecture-icon">
+            <i class="fa-solid fa-shield"></i>
+          </div>
+          <div class="architecture-text">
+            <h4>Security</h4>
+            <p>JWT authentication with role-based access control</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta">
+    <div class="cta-container">
+      <h2 class="cta-title">Ready to streamline your logistics operations?</h2>
+      <p class="cta-description">Access the system to manage orders, track deliveries, and monitor operations in real-time.</p>
+      <a href="/static/index.html" class="btn btn-primary btn-large">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Login to System
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" id="contact">
+    <div class="footer-container">
+      <div class="footer-section">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <i class="fa-solid fa-truck-fast"></i>
+          </div>
+          <span class="brand-name">SwiftTrack</span>
+        </div>
+        <p class="footer-description">Enterprise logistics coordination platform for modern operations.</p>
+      </div>
+      <div class="footer-section">
+        <h4 class="footer-title">System</h4>
+        <ul class="footer-links">
+          <li><a href="/static/index.html">Dashboard</a></li>
+          <li><a href="#system-overview">Services</a></li>
+          <li><a href="#architecture">Architecture</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4 class="footer-title">Project</h4>
+        <ul class="footer-links">
+          <li><a href="/architecture_documentation.md">Documentation</a></li>
+          <li><a href="https://github.com/vimu-nk/ma-swift-logi">GitHub Repository</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4 class="footer-title">Academic Project</h4>
+        <p class="footer-text">SCS2314 Middleware Architecture<br>Assignment 4 - Microservices Implementation</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 SwiftTrack. Academic project for educational purposes.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile Navigation Toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navMenu = document.getElementById('nav-menu');
+
+    navToggle.addEventListener('click', () => {
+      navMenu.classList.toggle('active');
+      navToggle.classList.toggle('active');
+    });
+
+    // Close mobile menu when clicking on a link
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('active');
+        navToggle.classList.remove('active');
+      });
+    });
+
+    // Sticky navbar on scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+        if (href !== '#') {
+          e.preventDefault();
+          const target = document.querySelector(href);
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
