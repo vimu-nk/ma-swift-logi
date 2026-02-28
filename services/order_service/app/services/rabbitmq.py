@@ -9,6 +9,7 @@ import structlog
 
 from shared.rabbitmq import RabbitMQClient
 from app.core.database import async_session_factory
+from app.models.order import OrderStatus
 from app.services import order_service as order_svc
 from app.services.auto_assign import assign_driver
 
@@ -123,6 +124,34 @@ async def _handle_status_update(body: dict[str, Any]) -> None:
             extra_fields["route_id"] = body["route_id"]
 
     async with async_session_factory() as session:
+        current_order = await order_svc.get_order(session, order_id)
+        if not current_order:
+            logger.warning("order_not_found_for_status_update", order_id=str(order_id), event=event)
+            return
+
+        locked_driver_phase_statuses = {
+            OrderStatus.PICKUP_ASSIGNED,
+            OrderStatus.PICKING_UP,
+            OrderStatus.PICKED_UP,
+            OrderStatus.AT_WAREHOUSE,
+            OrderStatus.OUT_FOR_DELIVERY,
+            OrderStatus.DELIVERY_ATTEMPTED,
+            OrderStatus.DELIVERED,
+            OrderStatus.FAILED,
+            OrderStatus.CANCELLED,
+        }
+        if (
+            event in {"order.cms_registered", "order.wms_received", "order.route_optimized"}
+            and current_order.status in locked_driver_phase_statuses
+        ):
+            logger.info(
+                "stale_integration_event_ignored",
+                order_id=str(order_id),
+                event=event,
+                current_status=current_order.status.value,
+            )
+            return
+
         order = await order_svc.update_order_status(
             session,
             order_id=order_id,

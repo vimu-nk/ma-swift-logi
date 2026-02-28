@@ -71,12 +71,13 @@ async def list_orders(
         client_id = user["username"]
     if user["role"] == "driver":
         driver_id_any = user["username"]
+    elif driver_id and not driver_id_any:
+        # Backward compatibility for legacy UI query param
+        driver_id_any = driver_id
 
     params: dict[str, Any] = {"limit": limit, "offset": offset}
     if client_id:
         params["client_id"] = client_id
-    if driver_id:
-        params["driver_id"] = driver_id
     if driver_id_any:
         params["driver_id_any"] = driver_id_any
     if order_status:

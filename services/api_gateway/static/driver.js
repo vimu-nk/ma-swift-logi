@@ -49,17 +49,23 @@
 			// Fetch all orders related to this driver
 			const data = await api(
 				"GET",
-				`/api/orders?driver_id=${currentUser.username}&limit=200`,
+				`/api/orders?driver_id_any=${encodeURIComponent(currentUser.username)}&limit=200`,
 			);
 			const allOrders = data.orders || [];
+			const pickupStatuses = [
+				"WMS_RECEIVED",
+				"ROUTE_OPTIMIZED",
+				"READY",
+				"PICKUP_ASSIGNED",
+				"PICKING_UP",
+				"PICKED_UP",
+			];
 
 			// Categorize orders
 			const pickups = allOrders.filter(
 				(o) =>
 					o.pickup_driver_id === currentUser.username &&
-					["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(
-						o.status,
-					),
+					pickupStatuses.includes(o.status),
 			);
 
 			const deliveries = allOrders.filter(

@@ -29,7 +29,7 @@
 			// Get orders where this driver is involved
 			const data = await api(
 				"GET",
-				`/api/orders?driver_id=${currentUser.username}&limit=200`,
+				`/api/orders?driver_id_any=${encodeURIComponent(currentUser.username)}&limit=200`,
 			);
 			const allOrders = data.orders || [];
 

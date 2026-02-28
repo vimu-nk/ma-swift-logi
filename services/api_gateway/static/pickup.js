@@ -29,18 +29,22 @@
 			// Get orders where this driver is the pickup driver
 			const data = await api(
 				"GET",
-				`/api/orders?driver_id=${currentUser.username}&limit=200`,
+				`/api/orders?driver_id_any=${encodeURIComponent(currentUser.username)}&limit=200`,
 			);
-			// The backend driver_id query field currently filters by `driver_id` in order_service list_orders Wait, no, we updated the gateway to proxy `driver_id` as `driver_id` and order_service uses `pickup_driver_id == driver_id OR delivery_driver_id == driver_id`.
-			// So this will get both. We will filter client-side anyway.
 
 			const allOrders = data.orders || [];
+			const pickupStatuses = [
+				"WMS_RECEIVED",
+				"ROUTE_OPTIMIZED",
+				"READY",
+				"PICKUP_ASSIGNED",
+				"PICKING_UP",
+				"PICKED_UP",
+			];
 			const myPickups = allOrders.filter(
 				(o) =>
 					o.pickup_driver_id === currentUser.username &&
-					["PICKUP_ASSIGNED", "PICKING_UP", "PICKED_UP"].includes(
-						o.status,
-					),
+					pickupStatuses.includes(o.status),
 			);
 
 			renderPickups(myPickups);

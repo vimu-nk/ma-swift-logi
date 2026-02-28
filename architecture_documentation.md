@@ -36,6 +36,168 @@ The practical implementations map the concepts to specific decoupled Python/Fast
 - **`notification_service` (Port 8003)**: Listens for tracking updates and prepares notification payloads (email/push/alert events).
 - **Infrastructure**: PostgreSQL 16 for persistent state; RabbitMQ 3.13 for asynchronous queuing and publish/subscribe routing.
 
+### 2.3 Architecture Diagrams
+
+#### Diagram 1 — System Context (C4 Level 1)
+
+```mermaid
+flowchart LR
+    client[Client Portal\nBrowser User]
+    driver[Driver Dashboard\nBrowser User]
+    admin[Admin Dashboard\nBrowser User]
+
+    subgraph swift[SwiftTrack Middleware Platform]
+        gw[api_gateway\nFastAPI :8000]
+        os[order_service\nFastAPI :8001]
+        isvc[integration_service\nFastAPI Worker :8002]
+        ns[notification_service\nFastAPI Worker :8003]
+        mq[(RabbitMQ :5672)]
+        db[(PostgreSQL :5432)]
+    end
+
+    cms[CMS Legacy\nSOAP :8004]
+    ros[ROS Cloud\nREST :8005]
+    wms[WMS On-Prem\nTCP :9000]
+
+    client --> gw
+    driver --> gw
+    admin --> gw
+
+    gw --> os
+    gw --> mq
+
+    os --> db
+    os --> mq
+    mq --> isvc
+    mq --> ns
+    isvc --> mq
+
+    isvc --> cms
+    isvc --> ros
+    isvc --> wms
+
+    ns --> mq
+    mq --> gw
+```
+
+#### Diagram 2 — Container & Runtime Topology (Docker Compose)
+
+```mermaid
+flowchart TB
+    subgraph host[Docker Host]
+        subgraph net[swifttrack-net]
+            gw[api_gateway\n:8000]
+            os[order_service\n:8001]
+            isvc[integration_service\n:8002]
+            ns[notification_service\n:8003]
+            cms[cms_mock_soap\n:8004]
+            ros[ros_mock_rest\n:8005]
+            wms[wms_mock_tcp\n:9000/:9001]
+            mq[(rabbitmq\n:5672/:15672)]
+            pg[(postgres\n:5432)]
+        end
+    end
+
+    gw --> os
+    gw --> mq
+    os --> pg
+    os --> mq
+    isvc --> mq
+    ns --> mq
+    isvc --> cms
+    isvc --> ros
+    isvc --> wms
+```
+
+#### Diagram 3 — Core Event Flow (Order Creation to Pickup Assignment)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as Client UI
+    participant G as api_gateway
+    participant O as order_service
+    participant DB as PostgreSQL
+    participant MQ as RabbitMQ
+    participant I as integration_service
+    participant C as CMS SOAP
+    participant W as WMS TCP
+    participant R as ROS REST
+
+    U->>G: POST /api/orders
+    G->>O: Proxy create order
+    O->>DB: INSERT order (PENDING)
+    O-->>G: 202 Accepted
+    G-->>U: 202 Accepted
+
+    O->>MQ: Publish order.created
+    MQ->>I: Consume order.created
+    I->>C: Register shipment
+    C-->>I: cms_reference
+    I->>MQ: Publish order.cms_registered
+    I->>W: Create warehouse job
+    W-->>I: wms_reference
+    I->>MQ: Publish order.wms_received
+    I->>R: Optimize route
+    R-->>I: route_id
+    I->>MQ: Publish order.route_optimized
+
+    MQ->>O: Status events
+    O->>DB: Update status to READY
+    O->>DB: Auto-assign pickup driver
+    O->>MQ: Publish PICKUP_ASSIGNED
+```
+
+#### Diagram 4 — Real-Time Tracking & WebSocket Push
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant D as Driver UI
+    participant G as api_gateway
+    participant O as order_service
+    participant DB as PostgreSQL
+    participant MQ as RabbitMQ
+    participant N as notification_service
+    participant C as Client UI (WS)
+
+    D->>G: PATCH /api/orders/{id}/status (DELIVERED)
+    G->>O: Proxy status update
+    O->>DB: Persist new status + history
+    O->>MQ: Publish notification.status_changed
+    MQ->>N: Consume status_changed
+    N->>MQ: Publish notification.order_update
+    MQ->>G: notification.order_update
+    G-->>C: WebSocket push (order_update)
+```
+
+#### Diagram 5 — Saga Failure & Compensation Path
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant O as order_service
+    participant MQ as RabbitMQ
+    participant I as integration_service
+    participant R as ROS REST
+    participant N as notification_service
+    participant G as api_gateway
+    participant C as Client UI
+
+    O->>MQ: Publish order.created
+    MQ->>I: Consume order.created
+    I->>R: Optimize route
+    R-->>I: Error (invalid address / timeout)
+    I->>MQ: Publish order.saga_failed
+    MQ->>O: Consume order.saga_failed
+    O->>O: Mark order FAILED
+    O->>MQ: Publish notification.status_changed
+    MQ->>N: Consume status_changed
+    N->>MQ: Publish notification.order_update
+    MQ->>G: order update event
+    G-->>C: WS push + UI alert
+```
+
 ---
 
 ## 3. Alternative Architectures & Rationale
@@ -132,6 +294,65 @@ To maintain the principles of microservices, data persistence is isolated. Centr
 
 - **`order_service` database**: Holds the canonical master data for the Order lifecycle ("Pending", "Delivered", driver bindings).
 - **Data Synchronization**: No service directly queries another's database. Instead, data changes are replicated via RabbitMQ events (`order.created`, `notification.status_changed`).
+
+### 7.1 Order Lifecycle State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> CMS_REGISTERED
+    CMS_REGISTERED --> WMS_RECEIVED
+    WMS_RECEIVED --> READY
+    READY --> PICKUP_ASSIGNED
+    PICKUP_ASSIGNED --> PICKING_UP
+    PICKING_UP --> PICKED_UP
+    PICKED_UP --> AT_WAREHOUSE
+    AT_WAREHOUSE --> OUT_FOR_DELIVERY
+    OUT_FOR_DELIVERY --> DELIVERED
+    OUT_FOR_DELIVERY --> DELIVERY_ATTEMPTED
+    DELIVERY_ATTEMPTED --> AT_WAREHOUSE: attempts < max
+    DELIVERY_ATTEMPTED --> FAILED: attempts >= max
+    PENDING --> FAILED: saga_failed
+```
+
+### 7.2 Order Data Model (ER Diagram)
+
+```mermaid
+erDiagram
+    ORDERS ||--o{ ORDER_STATUS_HISTORY : has
+
+    ORDERS {
+        UUID id PK
+        STRING display_id UK
+        STRING client_id
+        STRING sender_name
+        STRING receiver_name
+        STRING status
+        TEXT pickup_address
+        TEXT delivery_address
+        JSONB package_details
+        STRING cms_reference
+        STRING wms_reference
+        STRING route_id
+        STRING pickup_driver_id
+        STRING delivery_driver_id
+        INT delivery_attempts
+        INT max_delivery_attempts
+        TEXT delivery_notes
+        JSONB proof_of_delivery
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    ORDER_STATUS_HISTORY {
+        UUID id PK
+        UUID order_id FK
+        STRING old_status
+        STRING new_status
+        TEXT details
+        TIMESTAMP created_at
+    }
+```
 
 ---
 
