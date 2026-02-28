@@ -7,222 +7,264 @@
 name: swifttrack
 
 services:
-  # ──────────────────────────────────────────────
-  # Infrastructure
-  # ──────────────────────────────────────────────
-  postgres:
-    image: postgres:16-alpine
-    container_name: swifttrack-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-swifttrack}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swifttrack_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-swifttrack}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-swifttrack}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
+    # ──────────────────────────────────────────────
+    # Infrastructure
+    # ──────────────────────────────────────────────
+    postgres:
+        image: postgres:16-alpine
+        container_name: swifttrack-postgres
+        restart: unless-stopped
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-swifttrack}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-swifttrack_secret}
+            POSTGRES_DB: ${POSTGRES_DB:-swifttrack}
+        ports:
+            - "${POSTGRES_PORT:-5432}:5432"
+        volumes:
+            - pg_data:/var/lib/postgresql/data
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-swifttrack}"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
 
-  rabbitmq:
-    image: rabbitmq:3.13-management-alpine
-    container_name: swifttrack-rabbitmq
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-swifttrack}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-swifttrack}
-    ports:
-      - "${RABBITMQ_PORT:-5672}:5672"
-      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 20s
-      retries: 12
-      start_period: 90s
+    rabbitmq:
+        image: rabbitmq:3.13-management-alpine
+        container_name: swifttrack-rabbitmq
+        restart: unless-stopped
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-swifttrack}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-swifttrack}
+        ports:
+            - "${RABBITMQ_PORT:-5672}:5672"
+            - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+            interval: 10s
+            timeout: 20s
+            retries: 12
+            start_period: 90s
 
-  # ──────────────────────────────────────────────
-  # Application Services
-  # ──────────────────────────────────────────────
-  api_gateway:
-    build:
-      context: .
-      dockerfile: services/api_gateway/Dockerfile
-    container_name: swifttrack-api-gateway
-    restart: unless-stopped
-    ports:
-      - "${API_GATEWAY_PORT:-8000}:8000"
-    env_file: .env
-    environment:
-      SERVICE_NAME: api_gateway
-      SERVICE_PORT: "8000"
-    depends_on:
-      rabbitmq:
-        condition: service_started
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # ──────────────────────────────────────────────
+    # Application Services
+    # ──────────────────────────────────────────────
+    api_gateway:
+        build:
+            context: .
+            dockerfile: services/api_gateway/Dockerfile
+        container_name: swifttrack-api-gateway
+        restart: unless-stopped
+        ports:
+            - "${API_GATEWAY_PORT:-8000}:8000"
+        env_file: .env
+        environment:
+            SERVICE_NAME: api_gateway
+            SERVICE_PORT: "8000"
+        depends_on:
+            rabbitmq:
+                condition: service_started
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  order_service:
-    build:
-      context: .
-      dockerfile: services/order_service/Dockerfile
-    container_name: swifttrack-order-service
-    restart: unless-stopped
-    ports:
-      - "${ORDER_SERVICE_PORT:-8001}:8001"
-    env_file: .env
-    environment:
-      SERVICE_NAME: order_service
-      SERVICE_PORT: "8001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_started
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    order_service:
+        build:
+            context: .
+            dockerfile: services/order_service/Dockerfile
+        container_name: swifttrack-order-service
+        restart: unless-stopped
+        ports:
+            - "${ORDER_SERVICE_PORT:-8001}:8001"
+        env_file: .env
+        environment:
+            SERVICE_NAME: order_service
+            SERVICE_PORT: "8001"
+        depends_on:
+            postgres:
+                condition: service_healthy
+            rabbitmq:
+                condition: service_started
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8001/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  integration_service:
-    build:
-      context: .
-      dockerfile: services/integration_service/Dockerfile
-    container_name: swifttrack-integration-service
-    restart: unless-stopped
-    ports:
-      - "${INTEGRATION_SERVICE_PORT:-8002}:8002"
-    env_file: .env
-    environment:
-      SERVICE_NAME: integration_service
-      SERVICE_PORT: "8002"
-    depends_on:
-      rabbitmq:
-        condition: service_started
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    integration_service:
+        build:
+            context: .
+            dockerfile: services/integration_service/Dockerfile
+        container_name: swifttrack-integration-service
+        restart: unless-stopped
+        ports:
+            - "${INTEGRATION_SERVICE_PORT:-8002}:8002"
+        env_file: .env
+        environment:
+            SERVICE_NAME: integration_service
+            SERVICE_PORT: "8002"
+        depends_on:
+            rabbitmq:
+                condition: service_started
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8002/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  notification_service:
-    build:
-      context: .
-      dockerfile: services/notification_service/Dockerfile
-    container_name: swifttrack-notification-service
-    restart: unless-stopped
-    ports:
-      - "${NOTIFICATION_SERVICE_PORT:-8003}:8003"
-    env_file: .env
-    environment:
-      SERVICE_NAME: notification_service
-      SERVICE_PORT: "8003"
-    depends_on:
-      rabbitmq:
-        condition: service_started
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    notification_service:
+        build:
+            context: .
+            dockerfile: services/notification_service/Dockerfile
+        container_name: swifttrack-notification-service
+        restart: unless-stopped
+        ports:
+            - "${NOTIFICATION_SERVICE_PORT:-8003}:8003"
+        env_file: .env
+        environment:
+            SERVICE_NAME: notification_service
+            SERVICE_PORT: "8003"
+        depends_on:
+            rabbitmq:
+                condition: service_started
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8003/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  cms_mock_soap:
-    build:
-      context: .
-      dockerfile: services/cms_mock_soap/Dockerfile
-    container_name: swifttrack-cms-mock-soap
-    restart: unless-stopped
-    ports:
-      - "${CMS_MOCK_PORT:-8004}:8004"
-    env_file: .env
-    environment:
-      SERVICE_NAME: cms_mock_soap
-      SERVICE_PORT: "8004"
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    cms_mock_soap:
+        build:
+            context: .
+            dockerfile: services/cms_mock_soap/Dockerfile
+        container_name: swifttrack-cms-mock-soap
+        restart: unless-stopped
+        ports:
+            - "${CMS_MOCK_PORT:-8004}:8004"
+        env_file: .env
+        environment:
+            SERVICE_NAME: cms_mock_soap
+            SERVICE_PORT: "8004"
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8004/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  ros_mock_rest:
-    build:
-      context: .
-      dockerfile: services/ros_mock_rest/Dockerfile
-    container_name: swifttrack-ros-mock-rest
-    restart: unless-stopped
-    ports:
-      - "${ROS_MOCK_PORT:-8005}:8005"
-    env_file: .env
-    environment:
-      SERVICE_NAME: ros_mock_rest
-      SERVICE_PORT: "8005"
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    ros_mock_rest:
+        build:
+            context: .
+            dockerfile: services/ros_mock_rest/Dockerfile
+        container_name: swifttrack-ros-mock-rest
+        restart: unless-stopped
+        ports:
+            - "${ROS_MOCK_PORT:-8005}:8005"
+        env_file: .env
+        environment:
+            SERVICE_NAME: ros_mock_rest
+            SERVICE_PORT: "8005"
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:8005/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
-  wms_mock_tcp:
-    build:
-      context: .
-      dockerfile: services/wms_mock_tcp/Dockerfile
-    container_name: swifttrack-wms-mock-tcp
-    restart: unless-stopped
-    ports:
-      - "${WMS_MOCK_TCP_PORT:-9000}:9000"
-      - "${WMS_MOCK_HEALTH_PORT:-9001}:9001"
-    env_file: .env
-    environment:
-      SERVICE_NAME: wms_mock_tcp
-      TCP_PORT: "9000"
-      HEALTH_PORT: "9001"
-    networks:
-      - swifttrack-net
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9001/health/live')"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    wms_mock_tcp:
+        build:
+            context: .
+            dockerfile: services/wms_mock_tcp/Dockerfile
+        container_name: swifttrack-wms-mock-tcp
+        restart: unless-stopped
+        ports:
+            - "${WMS_MOCK_TCP_PORT:-9000}:9000"
+            - "${WMS_MOCK_HEALTH_PORT:-9001}:9001"
+        env_file: .env
+        environment:
+            SERVICE_NAME: wms_mock_tcp
+            TCP_PORT: "9000"
+            HEALTH_PORT: "9001"
+        networks:
+            - swifttrack-net
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "python",
+                    "-c",
+                    "import urllib.request; urllib.request.urlopen('http://localhost:9001/health/live')",
+                ]
+            interval: 15s
+            timeout: 5s
+            retries: 3
+            start_period: 10s
 
 # ──────────────────────────────────────────────
 # Networks & Volumes
 # ──────────────────────────────────────────────
 networks:
-  swifttrack-net:
-    driver: bridge
-    name: swifttrack-net
+    swifttrack-net:
+        driver: bridge
+        name: swifttrack-net
 
 volumes:
-  pg_data:
-    name: swifttrack-pg-data
+    pg_data:
+        name: swifttrack-pg-data
