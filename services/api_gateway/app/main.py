@@ -9,7 +9,7 @@ import pathlib
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
@@ -62,7 +62,11 @@ def create_app() -> FastAPI:
 
         @application.get("/", include_in_schema=False)
         async def root():
-            return RedirectResponse("/login")
+            return FileResponse(str(static_dir / "landing.html"))
+
+        @application.get("/landing", include_in_schema=False)
+        async def serve_landing():
+            return FileResponse(str(static_dir / "landing.html"))
 
         @application.get("/login", include_in_schema=False)
         async def serve_login():

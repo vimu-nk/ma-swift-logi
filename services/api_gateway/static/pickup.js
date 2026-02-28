@@ -19,8 +19,6 @@
 		getUser,
 	} = ST;
 
-	let pollingInterval = null;
-
 	if (!requireAuth("driver")) return;
 	const currentUser = getUser();
 	if (!currentUser) return;
@@ -95,13 +93,13 @@
 
 	function getPickupActions(order) {
 		if (order.status === "PICKUP_ASSIGNED") {
-			return `<button class="btn btn-sm btn-primary" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKING_UP"><i class="ph ph-rocket-launch"></i> Start Pickup</button>`;
+			return `<div class="table-action-group"><button class="btn btn-sm btn-action-start" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKING_UP"><i class="ph ph-rocket-launch"></i> Start Pickup</button></div>`;
 		}
 		if (order.status === "PICKING_UP") {
-			return `<button class="btn btn-sm btn-success" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKED_UP"><i class="ph ph-package"></i> Confirm Pickup</button>`;
+			return `<div class="table-action-group"><button class="btn btn-sm btn-action-confirm" data-action="pickup-status" data-order-id="${order.id}" data-status="PICKED_UP"><i class="ph ph-package"></i> Confirm Pickup</button></div>`;
 		}
 		if (order.status === "PICKED_UP") {
-			return `<button class="btn btn-sm btn-amber" data-action="pickup-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE"><i class="ph ph-buildings"></i> Drop at Warehouse</button>`;
+			return `<div class="table-action-group"><button class="btn btn-sm btn-action-handover" data-action="pickup-status" data-order-id="${order.id}" data-status="AT_WAREHOUSE"><i class="ph ph-buildings"></i> Drop at Warehouse</button></div>`;
 		}
 		return `<span class="text-muted text-sm">${formatStatus(order.status)}</span>`;
 	}
@@ -135,7 +133,6 @@
 		});
 
 		setOrderUpdateCallback(() => loadPickups());
-		pollingInterval = setInterval(() => loadPickups(), 10000);
 		loadPickups();
 	}
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import structlog
@@ -35,9 +36,14 @@ async def tracking_websocket(websocket: WebSocket, client_id: str) -> None:
     try:
         # Keep connection alive — wait for client messages (or disconnect)
         while True:
-            data = await websocket.receive_text()
-            # Echo acknowledgement
-            await websocket.send_json({"type": "ack", "data": data})
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=45.0)
+                if data == "ping":
+                    await websocket.send_json({"type": "pong"})
+                else:
+                    await websocket.send_json({"type": "ack", "data": data})
+            except TimeoutError:
+                await websocket.send_json({"type": "ping"})
     except WebSocketDisconnect:
         logger.info("websocket_disconnected", client_id=client_id)
     finally:

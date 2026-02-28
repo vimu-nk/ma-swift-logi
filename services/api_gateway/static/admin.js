@@ -19,7 +19,6 @@
 		setOrderUpdateCallback,
 	} = ST;
 
-	let pollingInterval = null;
 	let ordersCache = [];
 	let driversCache = [];
 	let activeTab = "orders";
@@ -188,8 +187,13 @@
 		document.querySelectorAll("#admin-tabs .tab-btn").forEach((btn) => {
 			btn.classList.toggle("active", btn.dataset.tab === tab);
 		});
-		$("#panel-orders").classList.toggle("hidden", tab !== "orders");
-		$("#panel-drivers").classList.toggle("hidden", tab !== "drivers");
+		const ordersPanel = $("#panel-orders");
+		const driversPanel = $("#panel-drivers");
+
+		ordersPanel.classList.toggle("active", tab === "orders");
+		driversPanel.classList.toggle("active", tab === "drivers");
+		ordersPanel.classList.toggle("hidden", tab !== "orders");
+		driversPanel.classList.toggle("hidden", tab !== "drivers");
 	}
 
 	// ── Init ──────────────────────────────────────────────
@@ -219,12 +223,6 @@
 		// WebSocket callback
 		setOrderUpdateCallback(() =>
 			loadAdminData($("#admin-filter-status").value),
-		);
-
-		// Start polling
-		pollingInterval = setInterval(
-			() => loadAdminData($("#admin-filter-status").value),
-			10000,
 		);
 
 		// Initial load

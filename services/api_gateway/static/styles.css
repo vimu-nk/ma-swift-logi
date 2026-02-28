@@ -438,6 +438,65 @@ h4 {
 	background: #b91c1c;
 }
 
+.btn-amber {
+	background: var(--warning);
+	color: white;
+}
+
+.btn-amber:hover {
+	background: #d97706;
+}
+
+.btn-action-start {
+	background: var(--accent-blue);
+	color: white;
+	box-shadow: 0 2px 6px rgba(37, 99, 235, 0.28);
+}
+
+.btn-action-start:hover {
+	background: #1d4ed8;
+}
+
+.btn-action-confirm {
+	background: var(--success);
+	color: white;
+	box-shadow: 0 2px 6px rgba(22, 163, 74, 0.28);
+}
+
+.btn-action-confirm:hover {
+	background: #15803d;
+}
+
+.btn-action-handover {
+	background: var(--warning);
+	color: white;
+	box-shadow: 0 2px 6px rgba(245, 158, 11, 0.28);
+}
+
+.btn-action-handover:hover {
+	background: #d97706;
+}
+
+.btn-action-deliver {
+	background: var(--success);
+	color: white;
+	box-shadow: 0 2px 6px rgba(22, 163, 74, 0.28);
+}
+
+.btn-action-deliver:hover {
+	background: #15803d;
+}
+
+.btn-action-fail {
+	background: var(--error);
+	color: white;
+	box-shadow: 0 2px 6px rgba(220, 38, 38, 0.28);
+}
+
+.btn-action-fail:hover {
+	background: #b91c1c;
+}
+
 .btn-sm {
 	padding: 7px 14px;
 	font-size: 0.8125rem;
@@ -852,6 +911,7 @@ h4 {
 	padding: 12px 16px;
 	border-bottom: 1px solid var(--border-light);
 	color: var(--text-primary);
+	vertical-align: middle;
 }
 
 .data-table tr {
@@ -875,8 +935,38 @@ h4 {
 }
 
 .data-table .cell-actions {
+	vertical-align: middle;
+	white-space: nowrap;
+	text-align: center;
+}
+
+.table-action-group {
 	display: flex;
-	gap: var(--space-xs);
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-sm);
+	flex-wrap: wrap;
+}
+
+.data-table .cell-actions .btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-sm);
+	min-width: 132px;
+	min-height: 32px;
+	line-height: 1;
+}
+
+.data-table .cell-actions .btn i {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	line-height: 1;
+}
+
+.data-table tbody tr:last-child td {
+	border-bottom: none;
 }
 
 /* ── Modal ───────────────────────────────────────────────── */
@@ -963,6 +1053,16 @@ h4 {
 .timeline-item:last-child {
 	margin-bottom: 0;
 	padding-bottom: 0;
+}
+
+.timeline-item.terminal:last-child::after {
+	content: "";
+	position: absolute;
+	left: -22px;
+	top: 18px;
+	bottom: -4px;
+	width: 4px;
+	background: var(--bg-white);
 }
 
 .timeline-item::before {

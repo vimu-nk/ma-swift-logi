@@ -18,7 +18,6 @@
 	let authToken = null;
 	let ws = null;
 	let orders = [];
-	let pollingInterval = null;
 
 	// ── DOM Helpers ───────────────────────────────────────
 	const $ = (sel) => document.querySelector(sel);
@@ -107,10 +106,6 @@
 		if (ws) {
 			ws.close();
 			ws = null;
-		}
-		if (pollingInterval) {
-			clearInterval(pollingInterval);
-			pollingInterval = null;
 		}
 	}
 
@@ -267,14 +262,6 @@
 
 		// Connect WebSocket
 		connectWebSocket();
-
-		// Start polling for updates
-		if (pollingInterval) clearInterval(pollingInterval);
-		pollingInterval = setInterval(() => {
-			if (currentUser.role === "client") loadOrders();
-			else if (currentUser.role === "driver") loadDriverOrders();
-			else loadAdminOrders();
-		}, 10000);
 	}
 
 	// ── WebSocket ─────────────────────────────────────────

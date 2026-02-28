@@ -19,8 +19,6 @@
 		getUser,
 	} = ST;
 
-	let pollingInterval = null;
-
 	if (!requireAuth("driver")) return;
 	const currentUser = getUser();
 	if (!currentUser) return;
@@ -38,9 +36,11 @@
 			const myDeliveries = allOrders.filter(
 				(o) =>
 					o.delivery_driver_id === currentUser.username &&
-					["OUT_FOR_DELIVERY", "DELIVERY_ATTEMPTED"].includes(
-						o.status,
-					),
+					[
+						"AT_WAREHOUSE",
+						"OUT_FOR_DELIVERY",
+						"DELIVERY_ATTEMPTED",
+					].includes(o.status),
 			);
 
 			renderDeliveries(myDeliveries);
@@ -82,10 +82,14 @@
 	}
 
 	function getDeliveryActions(order) {
+		if (order.status === "AT_WAREHOUSE") {
+			return `<div class="table-action-group"><button class="btn btn-sm btn-action-start" data-action="delivery-status" data-order-id="${order.id}" data-status="OUT_FOR_DELIVERY"><i class="ph ph-truck"></i> Start Delivery</button></div>`;
+		}
+
 		return `
-			<div style="display: flex; gap: var(--space-xs);">
-				<button class="btn btn-sm btn-success" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
-				<button class="btn btn-sm btn-danger" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
+			<div class="table-action-group">
+				<button class="btn btn-sm btn-action-deliver" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERED"><i class="ph ph-check-circle"></i> Deliver</button>
+				<button class="btn btn-sm btn-action-fail" data-action="delivery-status" data-order-id="${order.id}" data-status="DELIVERY_ATTEMPTED"><i class="ph ph-x-circle"></i> Fail Attempt</button>
 			</div>
 		`;
 	}
@@ -140,7 +144,6 @@
 		});
 
 		setOrderUpdateCallback(() => loadDeliveries());
-		pollingInterval = setInterval(() => loadDeliveries(), 10000);
 		loadDeliveries();
 	}
 

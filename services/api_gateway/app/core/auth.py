@@ -18,17 +18,17 @@ ALGORITHM = "HS256"
 # Stub users for prototype (in production, use a user DB)
 STUB_USERS = {
     # 5 Clients
-    "client1": {"password": "password123", "role": "client", "name": "Client A"},
-    "client2": {"password": "password123", "role": "client", "name": "Client B"},
-    "client3": {"password": "password123", "role": "client", "name": "Client C"},
-    "client4": {"password": "password123", "role": "client", "name": "Client D"},
-    "client5": {"password": "password123", "role": "client", "name": "Client E"},
+    "client1": {"password": "T9v$Q2mLp7", "role": "client", "name": "Client A"},
+    "client2": {"password": "T9v$Q2mLp7", "role": "client", "name": "Client B"},
+    "client3": {"password": "T9v$Q2mLp7", "role": "client", "name": "Client C"},
+    "client4": {"password": "T9v$Q2mLp7", "role": "client", "name": "Client D"},
+    "client5": {"password": "T9v$Q2mLp7", "role": "client", "name": "Client E"},
     # 3 Drivers
-    "driver1": {"password": "password123", "role": "driver", "name": "Driver Kamal"},
-    "driver2": {"password": "password123", "role": "driver", "name": "Driver Nimal"},
-    "driver3": {"password": "password123", "role": "driver", "name": "Driver Sunimal"},
+    "driver1": {"password": "T9v$Q2mLp7", "role": "driver", "name": "Driver Kamal"},
+    "driver2": {"password": "T9v$Q2mLp7", "role": "driver", "name": "Driver Nimal"},
+    "driver3": {"password": "T9v$Q2mLp7", "role": "driver", "name": "Driver Sunimal"},
     # 1 Admin
-    "admin": {"password": "admin123", "role": "admin", "name": "System Admin"},
+    "admin": {"password": "T9v$Q2mLp7", "role": "admin", "name": "System Admin"},
 }
 
 

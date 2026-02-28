@@ -9,6 +9,7 @@
 :root {
 	/* Primary Colors */
 	--primary-navy: #0f172a;
+	--brand-navy: #0f172a;
 	--accent-blue: #2563eb;
 
 	/* Background */
@@ -57,6 +58,7 @@
 
 :root[data-theme="dark"] {
 	--primary-navy: #e2e8f0;
+	--brand-navy: #020617;
 	--accent-blue: #3b82f6;
 
 	--bg-white: #0f172a;
@@ -78,6 +80,7 @@
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
 		--primary-navy: #e2e8f0;
+		--brand-navy: #020617;
 		--accent-blue: #3b82f6;
 
 		--bg-white: #0f172a;
@@ -296,10 +299,15 @@ a {
 .hero {
 	background: var(--bg-light);
 	padding: var(--space-4xl) var(--space-xl);
+	min-height: calc(100vh - 72px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .hero-container {
 	max-width: 1200px;
+	width: 100%;
 	margin: 0 auto;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
@@ -552,7 +560,7 @@ a {
 
 /* ── CTA Section ─────────────────────────────────────────── */
 .cta {
-	background: var(--primary-navy);
+	background: var(--brand-navy);
 	color: white;
 	padding: var(--space-4xl) var(--space-xl);
 	text-align: center;
@@ -561,6 +569,9 @@ a {
 .cta-container {
 	max-width: 800px;
 	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
 .cta-title {

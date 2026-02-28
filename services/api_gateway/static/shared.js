@@ -17,6 +17,7 @@
 	let currentUser = null;
 	let authToken = null;
 	let ws = null;
+	let wsHeartbeatInterval = null;
 
 	// ── Theme ─────────────────────────────────────────────
 	function getPreferredTheme() {
@@ -109,6 +110,10 @@
 		currentUser = null;
 		localStorage.removeItem(TOKEN_KEY);
 		localStorage.removeItem(USER_KEY);
+		if (wsHeartbeatInterval) {
+			clearInterval(wsHeartbeatInterval);
+			wsHeartbeatInterval = null;
+		}
 		if (ws) {
 			ws.close();
 			ws = null;
@@ -173,6 +178,10 @@
 
 	function connectWebSocket() {
 		if (!currentUser) return;
+		if (wsHeartbeatInterval) {
+			clearInterval(wsHeartbeatInterval);
+			wsHeartbeatInterval = null;
+		}
 		if (ws) ws.close();
 		const protocol = location.protocol === "https:" ? "wss" : "ws";
 		const wsUrl = `${protocol}://${location.host}/ws/tracking/${currentUser.username}`;
@@ -186,11 +195,24 @@
 					el.classList.remove("disconnected");
 					el.title = "WebSocket connected";
 				}
+
+				wsHeartbeatInterval = setInterval(() => {
+					if (ws && ws.readyState === WebSocket.OPEN) {
+						ws.send("ping");
+					}
+				}, 25000);
 			};
 
 			ws.onmessage = (event) => {
 				try {
 					const data = JSON.parse(event.data);
+					if (
+						data.type === "pong" ||
+						data.type === "ping" ||
+						data.type === "ack"
+					) {
+						return;
+					}
 					if (data.type === "order_update") {
 						showToast(
 							"info",
@@ -205,6 +227,10 @@
 			};
 
 			ws.onclose = () => {
+				if (wsHeartbeatInterval) {
+					clearInterval(wsHeartbeatInterval);
+					wsHeartbeatInterval = null;
+				}
 				const el = $("#ws-status");
 				if (el) {
 					el.classList.add("disconnected");
@@ -341,13 +367,21 @@
 
 		// Timeline
 		const timeline = $("#modal-timeline");
-		const history = order.status_history || [];
+		const fullHistory = order.status_history || [];
+		const terminalStates = ["DELIVERED", "FAILED", "CANCELLED"];
+		const terminalIndex = fullHistory.findIndex((entry) =>
+			terminalStates.includes(entry.new_status),
+		);
+		const history =
+			terminalIndex >= 0
+				? fullHistory.slice(0, terminalIndex + 1)
+				: fullHistory;
 
 		if (history.length) {
 			timeline.innerHTML = history
 				.map(
-					(h) => `
-        <div class="timeline-item">
+					(h, index) => `
+        <div class="timeline-item ${terminalStates.includes(h.new_status) && index === history.length - 1 ? "terminal" : ""}">
           <div class="timeline-status">
             <span class="status-badge status-${h.new_status}">${formatStatus(h.new_status)}</span>
           </div>

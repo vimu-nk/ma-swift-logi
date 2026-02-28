@@ -21,7 +21,6 @@
 	} = ST;
 
 	let orders = [];
-	let pollingInterval = null;
 
 	// ── Auth guard ────────────────────────────────────────
 	if (!requireAuth("client")) return;
@@ -161,9 +160,6 @@
 
 		// WebSocket callback
 		setOrderUpdateCallback(() => loadOrders());
-
-		// Start polling
-		pollingInterval = setInterval(() => loadOrders(), 10000);
 
 		// Initial load
 		loadOrders();
