@@ -6,15 +6,16 @@
   <meta name="description" content="SwiftTrack — Sign in to your logistics dashboard">
   <title>SwiftTrack — Login</title>
   <link rel="stylesheet" href="/static/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
 </head>
 <body>
 
 <!-- ═══════════ Login View ═══════════ -->
 <div class="login-container view active">
   <div class="card login-card">
-    <div class="logo-big">⚡</div>
-    <h1 class="text-gradient">SwiftTrack</h1>
+    <div class="logo-big"><i class="fa-solid fa-truck-fast"></i></div>
+    <h1>SwiftTrack</h1>
     <p class="subtitle">Logistics Management Platform</p>
 
     <form id="login-form" autocomplete="off">
@@ -26,7 +27,7 @@
         <label class="form-label" for="login-password">Password</label>
         <div class="input-group">
           <input class="form-input" id="login-password" type="password" placeholder="Enter password" required>
-          <button type="button" class="btn-toggle-pw" id="toggle-password" title="Show password">👁️</button>
+          <button type="button" class="btn-toggle-pw" id="toggle-password" title="Show password"><i class="fa-solid fa-eye"></i></button>
         </div>
       </div>
       <div id="login-error" class="login-error"></div>

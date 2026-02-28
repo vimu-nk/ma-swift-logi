@@ -6,17 +6,17 @@
 		<meta name="description" content="SwiftTrack &mdash; Driver Dashboard" />
 		<title>SwiftTrack &mdash; Driver Dashboard</title>
 		<link rel="stylesheet" href="/static/styles.css" />
-		<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 0 L10 60 L50 60 L40 100 L90 40 L50 40 Z' fill='%233b82f6'/></svg>">
-	  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-</head>
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+		<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%232563eb' width='100' height='100'/%3E%3Ctext x='50' y='70' font-size='60' fill='white' text-anchor='middle' font-family='Arial, sans-serif' font-weight='bold'%3ES%3C/text%3E%3C/svg%3E">
+	</head>
 	<body>
 		<!-- ----------- App Shell (Nav) ----------- -->
 		<div class="app-container">
 			<!-- Navigation -->
 			<nav class="navbar">
 				<a class="navbar-brand" href="/driver">
-					<div class="logo"><i class="ph-fill ph-lightning"></i></div>
-					<span class="text-gradient">SwiftTrack</span>
+					<div class="logo"><i class="fa-solid fa-truck-fast"></i></div>
+					<span>SwiftTrack</span>
 				</a>
 				<div class="navbar-right">
 					<div
@@ -38,30 +38,30 @@
 			<main class="page-content">
 				<!-- --- Driver Dashboard --- -->
 				<div class="dashboard-header">
-					<h1><i class="ph ph-truck"></i> Driver Dashboard</h1>
+					<h1><i class="fa-solid fa-truck"></i> Driver Dashboard</h1>
 					<div class="dashboard-actions">
 						<button
 							class="btn btn-sm btn-secondary"
 							id="refresh-driver-btn"
 						>
-							<i class="ph ph-arrows-clockwise"></i> Refresh
+							<i class="fa-solid fa-arrows-rotate"></i> Refresh
 						</button>
 					</div>
 				</div>
 
 				<div class="stats-grid" id="driver-stats">
 					<div class="stat-card cyan">
-						<div class="stat-icon"><i class="ph ph-package"></i></div>
+						<div class="stat-icon"><i class="fa-solid fa-box"></i></div>
 						<div class="stat-value" id="driver-stat-pickup">0</div>
 						<div class="stat-label">Active Pickups</div>
 					</div>
 					<div class="stat-card amber">
-						<div class="stat-icon"><i class="ph ph-truck"></i></div>
+						<div class="stat-icon"><i class="fa-solid fa-truck"></i></div>
 						<div class="stat-value" id="driver-stat-delivery">0</div>
 						<div class="stat-label">Active Deliveries</div>
 					</div>
 					<div class="stat-card green">
-						<div class="stat-icon"><i class="ph ph-check-circle"></i></div>
+						<div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
 						<div class="stat-value" id="driver-stat-completed">0</div>
 						<div class="stat-label">Completed Today</div>
 					</div>
@@ -78,7 +78,7 @@
 					<div class="tab-pane active" id="tab-pickups">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="ph ph-package"></i></span> My Pickups</h3>
+								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-box"></i></span> My Pickups</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="pickup-table">
@@ -95,7 +95,7 @@
 								</table>
 							</div>
 							<div class="empty-state hidden" id="pickup-empty">
-								<div class="empty-icon"><i class="ph ph-mailbox"></i></div>
+								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
 								<p>No active pickups assigned to you right now.</p>
 							</div>
 						</div>
@@ -105,7 +105,7 @@
 					<div class="tab-pane" id="tab-deliveries">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="ph ph-truck"></i></span> My Deliveries</h3>
+								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-truck"></i></span> My Deliveries</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="delivery-table">
@@ -122,7 +122,7 @@
 								</table>
 							</div>
 							<div class="empty-state hidden" id="delivery-empty">
-								<div class="empty-icon"><i class="ph ph-mailbox"></i></div>
+								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
 								<p>No active deliveries assigned to you right now.</p>
 							</div>
 						</div>
@@ -132,7 +132,7 @@
 					<div class="tab-pane" id="tab-completed">
 						<div class="card">
 							<div class="card-header">
-								<h3 class="card-title"><span class="icon"><i class="ph ph-check-circle"></i></span> Completed Orders</h3>
+								<h3 class="card-title"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> Completed Orders</h3>
 							</div>
 							<div class="table-wrapper">
 								<table class="data-table" id="completed-table">
@@ -148,7 +148,7 @@
 								</table>
 							</div>
 							<div class="empty-state hidden" id="completed-empty">
-								<div class="empty-icon"><i class="ph ph-mailbox"></i></div>
+								<div class="empty-icon"><i class="fa-solid fa-inbox"></i></div>
 								<p>No completed orders today.</p>
 							</div>
 						</div>
@@ -162,7 +162,7 @@
 		<div class="modal-overlay" id="order-modal">
 			<div class="modal">
 				<div class="modal-header">
-					<h2><i class="ph ph-package"></i> Order Details</h2>
+					<h2><i class="fa-solid fa-box"></i> Order Details</h2>
 					<button class="modal-close" id="modal-close">
 						&times;
 					</button>
